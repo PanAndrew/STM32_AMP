@@ -24,7 +24,13 @@
 #define ACC_DATA 0x28
 #define ACC_MULTIBYTE_READ 0x80
 #define ACC_CTRL_REG1 0x20
-#define ACC_CTRL_REG1_200HZ 0x67
+#define ACC_CTRL_TURN_ON 0x07
+#define ACC_CTRL_200HZ 0x60
+#define ACC_CTRL_REG1_200HZ (ACC_CTRL_TURN_ON | ACC_CTRL_200HZ)
+#define ACC_CTRL_REG4 0x23
+#define ACC_CTRL_HR 0x08
+#define ACC_CTRL_2G 0x00
+#define ACC_CTRL_REG4_2G_HR (ACC_CTRL_2G | ACC_CTRL_HR)
 #define ACC_DATA_SIZE 6
 
 #define MAG_SENS_ADDR 0x3C
@@ -44,7 +50,7 @@ class IMUSensor {
 	DataBuffer<IMUData> gyroBuffer;
 	DataBuffer<IMUData> magBuffer;
 
-	uint8_t rawData[12];
+	uint8_t rawData[6];
 
 	void pullAccData(I2C_HandleTypeDef *hi2c, uint8_t accDeviceAddr, uint8_t registerAddr, uint8_t size);
 	void pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint8_t size);
@@ -59,9 +65,10 @@ public:
 
 	void initialize(SPI_HandleTypeDef *hspi, I2C_HandleTypeDef *hi2c);
 	void pullDataFromSensors(SPI_HandleTypeDef *hspi, I2C_HandleTypeDef *hi2c);
-	uint8_t getAccData(uint8_t *dataBuffer);
-	uint8_t getGyroData(uint8_t *dataBuffer);
-	uint8_t getMagData(uint8_t *dataBuffer);
+	uint16_t getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer);
+	uint16_t getAccData(uint8_t *dataBuffer);
+	uint16_t getGyroData(uint8_t *dataBuffer);
+	uint16_t getMagData(uint8_t *dataBuffer);
 	void configureAcc(I2C_HandleTypeDef *hi2c, uint8_t accRegAddr, uint8_t regValue);
 	void configureGyro(SPI_HandleTypeDef *hspi, uint8_t gyroRegAddr, uint8_t regValue);
 	void configureMag(I2C_HandleTypeDef *hi2c, uint8_t accRegAddr, uint8_t regValue);

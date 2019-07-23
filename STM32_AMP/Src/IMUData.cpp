@@ -12,24 +12,12 @@ IMUData::IMUData()
 }
 
 IMUData::IMUData(const IMUData &imuData):
-		data(std::move(imuData.data.get())), timestamp(imuData.timestamp), size(imuData.size) // .get() or .release();
+		data(imuData.getData()), timestamp(imuData.getTimestamp()), size(imuData.getSize())
 {
 }
 
-IMUData& IMUData::operator=(const IMUData &imuData)
-{
-   data.reset(std::move(imuData.data.get()));
-   return *this;
-}
-
-//IMUData& IMUData::operator=(IMUData&& imuData)
-//{
-//   data = std::move(imuData.data);
-//   return *this;
-//}
-
-IMUData::IMUData(const uint8_t *rawData, const uint32_t &time, const uint16_t &dataSize):
-		data(std::unique_ptr<uint8_t[]>(new uint8_t[dataSize])), timestamp(time), size(dataSize)
+IMUData::IMUData(const uint8_t *rawData, uint32_t time, const uint8_t &dataSize):
+		data(new uint8_t[dataSize]), timestamp(time), size(dataSize)
 {
 	std::copy(rawData, rawData + dataSize, data.get());
 }
@@ -38,9 +26,9 @@ IMUData::~IMUData() {
 	// TODO Auto-generated destructor stub
 }
 
-const uint8_t* IMUData::getData() const
+std::shared_ptr<uint8_t[]> IMUData::getData() const
 {
-	return data.get();
+	return data;
 }
 
 uint32_t IMUData::getTimestamp() const
@@ -53,9 +41,9 @@ uint8_t IMUData::getByte(uint32_t number, uint8_t part)
 	return (number >> (8 * part)) & 0xFF;
 }
 
-uint8_t* IMUData::getDataInArray()
+uint8_t IMUData::getDataInArray(std::shared_ptr<uint8_t[]> *dataBuffer)
 {
-	std::unique_ptr<uint8_t[]> dataToReturn = std::unique_ptr<uint8_t[]>(new uint8_t[10]);
+	std::shared_ptr<uint8_t[]> dataToReturn = std::shared_ptr<uint8_t[]>(new uint8_t[10]);
 
 	std::copy(data.get(), data.get() + 6, dataToReturn.get());
 
@@ -64,5 +52,17 @@ uint8_t* IMUData::getDataInArray()
 		dataToReturn.get()[6 + i] = getByte(timestamp, i);
 	}
 
-	return dataToReturn.get();
+	dataBuffer = &dataToReturn;
+
+	return size + sizeof(timestamp);
+}
+
+uint8_t IMUData::getSize() const
+{
+	return size;
+}
+
+uint8_t IMUData::getObjectDataVolume()
+{
+	return size + sizeof(timestamp);
 }

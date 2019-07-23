@@ -21,6 +21,7 @@ void IMUSensor::initialize(SPI_HandleTypeDef *hspi, I2C_HandleTypeDef *hi2c)
 {
 	configureGyro(hspi, GYRO_CNT_REG_1, GYRO_TURN_ON);
 	configureAcc(hi2c, ACC_CTRL_REG1, ACC_CTRL_REG1_200HZ);
+	configureAcc(hi2c, ACC_CTRL_REG4, ACC_CTRL_REG4_2G_HR);
 	configureMag(hi2c, MAG_CRA_REG, MAG_CRA_REG_30HZ);
 	configureMag(hi2c, MAG_MR_REG, MAG_MR_REG_CONT);
 }
@@ -33,7 +34,12 @@ void IMUSensor::addToBuffer(DataBuffer<IMUData> &buffer, uint8_t size)
 
 void IMUSensor::pullAccData(I2C_HandleTypeDef *hi2c, uint8_t accDeviceAddr, uint8_t registerAddr, uint8_t size)
 {
-	HAL_I2C_Mem_Read(hi2c, accDeviceAddr, registerAddr, size, rawData, 1, 1);
+	HAL_I2C_Mem_Read(hi2c, accDeviceAddr, registerAddr, 1, rawData, size, 1);
+
+	for (uint8_t i = 0; i < 6; i += 2)
+	{
+		std::swap(rawData[i], rawData[i + 1]);
+	}
 
 	addToBuffer(accBuffer, size);
 }
@@ -55,7 +61,7 @@ void IMUSensor::pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint
 
 void IMUSensor::pullMagData(I2C_HandleTypeDef *hi2c, uint8_t magDeviceAddr, uint8_t registerAddr, uint8_t size)
 {
-	HAL_I2C_Mem_Read(hi2c, magDeviceAddr, registerAddr, size, rawData, 1, 1);
+	HAL_I2C_Mem_Read(hi2c, magDeviceAddr, registerAddr, 1, rawData, size, 1);
 
 	std::swap(rawData[2], rawData[4]);
 	std::swap(rawData[3], rawData[5]);
@@ -97,54 +103,45 @@ void IMUSensor::configureMag(I2C_HandleTypeDef *hi2c, uint8_t magRegAddr, uint8_
 	writeI2C(hi2c, MAG_SENS_ADDR, &magRegAddr, &regValue);
 }
 
-uint8_t IMUSensor::getAccData(uint8_t *dataBuffer)
+uint16_t getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer)
 {
-	IMUData tempData;
-	uint8_t *ptrToArrayData;
-	uint8_t numberOfElements = accBuffer.size();
+	IMUData tempData = buffer.get();
+	std::shared_ptr<uint8_t[]> ptrToArrayData;
+	uint8_t numberOfElements = buffer.size();
+	uint8_t numberOfBytesToCopy = tempData.getDataInArray(&ptrToArrayData);
+	std::unique_ptr<uint8_t[]> tempBuffer(new uint8_t[numberOfElements * numberOfBytesToCopy]);
 
-	for(uint16_t i = 0; i < accBuffer.size(); i++)
+	std::copy_n(ptrToArrayData.get(), numberOfBytesToCopy, tempBuffer.get());
+
+	for (uint16_t i = 1; i < numberOfElements; i++)
 	{
-		tempData = accBuffer.get();
-		ptrToArrayData = tempData.getDataInArray();
-		std::copy(ptrToArrayData, ptrToArrayData + tempData.getSize(), dataBuffer);
+		tempData = buffer.get();
+		numberOfBytesToCopy = tempData.getDataInArray(&ptrToArrayData);
+		std::copy_n(ptrToArrayData.get(), numberOfBytesToCopy, tempBuffer.get() + i * numberOfBytesToCopy);
 
 		//TO DO
-		//dopisanie informacji do dataBuffer'a (dopisywanie w pętli całego buffora)
+		//dopisanie informacji do dataBuffer'a (dopisywanie w pętli całego buffora) V
 		//głowny dataManagement
 		//swap danych y i z V
+		//poprawić implementacje empty w databuforze
 	}
 
-	return numberOfElements;
+	dataBuffer = tempBuffer.release();
+
+	return numberOfElements * numberOfBytesToCopy;
 }
 
-uint8_t IMUSensor::getGyroData(uint8_t *dataBuffer)
+uint16_t IMUSensor::getAccData(uint8_t *dataBuffer)
 {
-	IMUData tempData;
-	uint8_t *ptrToArrayData;
-	uint8_t numberOfElements = gyroBuffer.size();
-
-	for(uint16_t i = 0; i < gyroBuffer.size(); i++)
-	{
-		tempData = gyroBuffer.get();
-		ptrToArrayData = tempData.getDataInArray();
-		std::copy(ptrToArrayData, ptrToArrayData + tempData.getSize(), dataBuffer);
-	}
-	return numberOfElements;
+	return getBufferDataInArray(accBuffer, dataBuffer);
 }
 
-uint8_t IMUSensor::getMagData(uint8_t *dataBuffer)
+uint16_t IMUSensor::getGyroData(uint8_t *dataBuffer)
 {
-	IMUData tempData;
-	uint8_t *ptrToArrayData;
-	uint8_t numberOfElements = magBuffer.size();
+	return getBufferDataInArray(gyroBuffer, dataBuffer);
+}
 
-	for(uint16_t i = 0; i < magBuffer.size(); i++)
-	{
-		tempData = magBuffer.get();
-		ptrToArrayData = tempData.getDataInArray();
-		std::copy(ptrToArrayData, ptrToArrayData + tempData.getSize(), dataBuffer);
-	}
-
-	return numberOfElements;
+uint16_t IMUSensor::getMagData(uint8_t *dataBuffer)
+{
+	return getBufferDataInArray(magBuffer, dataBuffer);
 }

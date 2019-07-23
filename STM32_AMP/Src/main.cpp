@@ -31,6 +31,7 @@ extern "C"
 
 #include "Encoder.h"
 #include "DCMotor.h"
+#include "IMUSensor.h"
 
 /* USER CODE END Includes */
 
@@ -81,6 +82,10 @@ uint32_t numbOfMeasurements;
 RINGBUFF_T rxRingBuffer_UART3;
 Encoder encoder;
 DCMotor dcMotors;
+IMUSensor imuSensors(10);
+
+uint8_t spiResponse[6];
+uint8_t spiResponse1[6];
 
 /* USER CODE END PV */
 
@@ -173,6 +178,31 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //		HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_14);
 //		encoder.countPulsesPerSecond();
 		numbOfMeasurements++;
+
+		uint8_t whoami = 0x0F | 0x80;
+		uint8_t gyroData = 0x28 | 0xC0;
+		uint8_t accadr = (0x19 << 1);
+		uint8_t magadr = (0x1E << 1);
+
+		uint8_t accdata = (0x28 | 0x80);
+		uint8_t magdata = 0x03;
+
+
+		HAL_I2C_Mem_Read(&hi2c1, accadr, accdata, 1, spiResponse, 6, 1);
+
+		HAL_I2C_Mem_Read(&hi2c1, magadr, magdata, 1, spiResponse1, 6, 1);
+
+//		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
+//		HAL_SPI_Transmit(&hspi1, &whoami, 1, 1);
+//		HAL_SPI_Receive(&hspi1, spiResponse, 1, 1);
+//		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
+//
+//		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
+//		HAL_SPI_Transmit(&hspi1, &gyroData, 1, 1);
+//		HAL_SPI_Receive(&hspi1, spiResponse1, 6, 1);
+//		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
+
+		imuSensors.pullDataFromSensors(&hspi1, &hi2c1);
 	}
 
 	if (htim->Instance == TIM7)
@@ -236,15 +266,16 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_SPI_Init(&hspi1);
+  HAL_I2C_Init(&hi2c1);
+  imuSensors.initialize(&hspi1, &hi2c1);
+
+  HAL_UART_Receive_DMA(&huart3, rxBuffer_UART3, UART3_BUFFER_SIZE);
+
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim7);
-  HAL_UART_Receive_DMA(&huart3, rxBuffer_UART3, UART3_BUFFER_SIZE);
   HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
-
-  HAL_SPI_Init(&hspi1);
-
-
 
   /* USER CODE END 2 */
 

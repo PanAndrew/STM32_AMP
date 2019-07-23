@@ -1,6 +1,7 @@
 .metadata/
 gpio_Test/
 STM32_AMP/Debug/
+STM32_AMP/core
 
 # Prerequisites
 *.d

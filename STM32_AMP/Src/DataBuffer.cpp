@@ -6,6 +6,7 @@
  */
 
 #include "DataBuffer.h"
+#include "IMUData.h"
 
 template <class T>
 DataBuffer<T>::DataBuffer(uint8_t size): buffer(std::unique_ptr<T[]>(new T[size])), maxSize(size) {
@@ -22,7 +23,7 @@ void DataBuffer<T>::put(T item)
 {
 	buffer[head] = item;
 
-	if (full) {
+	if(fullFlag) {
 		tail = (tail + 1) % maxSize;
 	}
 
@@ -34,7 +35,7 @@ void DataBuffer<T>::put(T item)
 template <class T>
 T DataBuffer<T>::get()
 {
-	if (empty()) {
+	if(empty()) {
 		return T();
 	}
 
@@ -88,3 +89,5 @@ uint16_t DataBuffer<T>::size() const
 
 	return size;
 }
+
+template class DataBuffer<IMUData>;
