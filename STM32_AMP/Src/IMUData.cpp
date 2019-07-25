@@ -14,23 +14,34 @@ IMUData::IMUData()
 IMUData::IMUData(const IMUData &imuData):
 		timestamp(imuData.getTimestamp()), size(imuData.getSize())
 {
-	data.reset(new uint8_t[imuData.getSize()]);
-	data = imuData.getData();
+	std::move(imuData.getData().get(), imuData.getData().get() + size, data.get());
+}
+
+IMUData& IMUData::operator=(const IMUData &imuData)
+{
+	data = std::make_unique<uint8_t[]>(imuData.getSize());
+	data = std::move(imuData.getData());
+	timestamp = imuData.getTimestamp();
+	size = imuData.getSize();
+	return *this;
 }
 
 IMUData::IMUData(const uint8_t *rawData, uint32_t time, const uint8_t &dataSize):
-		data(new uint8_t[dataSize]), timestamp(time), size(dataSize)
+		timestamp(time), size(dataSize)
 {
-	std::copy(rawData, rawData + dataSize, data.get());
+	data = std::make_unique<uint8_t[]>(dataSize);
+	std::copy_n(rawData, dataSize, data.get());
 }
 
 IMUData::~IMUData() {
 	// TODO Auto-generated destructor stub
 }
 
-std::shared_ptr<uint8_t[]> IMUData::getData() const
+std::unique_ptr<uint8_t[]> IMUData::getData() const
 {
-	return data;
+	auto uniqueToReturn = std::make_unique<uint8_t[]>(size * sizeof timestamp);
+	std::copy(data.get(), data.get() + size, uniqueToReturn.get());
+	return uniqueToReturn;
 }
 
 uint32_t IMUData::getTimestamp() const
@@ -43,20 +54,20 @@ uint8_t IMUData::getByte(uint32_t number, uint8_t part)
 	return (number >> (8 * part)) & 0xFF;
 }
 
-uint8_t IMUData::getDataInArray(std::shared_ptr<uint8_t[]> &dataBuffer)
+uint8_t IMUData::getDataInArray(std::unique_ptr<uint8_t[]> &dataBuffer)
 {
-	std::shared_ptr<uint8_t[]> dataToReturn = std::shared_ptr<uint8_t[]>(new uint8_t[10]);
+	std::unique_ptr<uint8_t[]> dataToReturn = std::make_unique<uint8_t[]>(size + sizeof timestamp);
 
-	dataToReturn = data;
+	dataToReturn = std::move(data);
 
 	for(uint8_t i = 0; i < sizeof(timestamp); i++)
 	{
 		dataToReturn.get()[6 + i] = getByte(timestamp, sizeof(timestamp) - 1 - i);
 	}
 
-	dataBuffer = dataToReturn;
+	dataBuffer = std::move(dataToReturn);
 
-	return size + sizeof(timestamp);
+	return size + sizeof timestamp;
 }
 
 uint8_t IMUData::getSize() const

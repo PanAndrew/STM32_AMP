@@ -29,7 +29,7 @@ void IMUSensor::initialize(SPI_HandleTypeDef *hspi, I2C_HandleTypeDef *hi2c)
 void IMUSensor::addToBuffer(DataBuffer<IMUData> &buffer, uint8_t size)
 {
 	IMUData measurement(rawData, HAL_GetTick(), size);
-	buffer.put(&measurement);
+	buffer.put(measurement);
 }
 
 void IMUSensor::pullAccData(I2C_HandleTypeDef *hi2c, uint8_t accDeviceAddr, uint8_t registerAddr, uint8_t size)
@@ -115,7 +115,7 @@ uint16_t IMUSensor::getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *d
 		return 0;
 	}
 	IMUData tempData = buffer.get();
-	std::shared_ptr<uint8_t[]> ptrToArrayData;
+	std::unique_ptr<uint8_t[]> ptrToArrayData;
 	uint8_t numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData);
 	std::unique_ptr<uint8_t[]> tempBuffer(new uint8_t[numberOfElements * numberOfBytesToCopy]);
 

@@ -14,7 +14,7 @@
 
 class IMUData {
 
-	std::shared_ptr<uint8_t[]> data;
+	std::unique_ptr<uint8_t[]> data;
 	uint32_t timestamp;
 	uint8_t size;
 
@@ -23,12 +23,13 @@ class IMUData {
 public:
 	IMUData();
 	IMUData(const IMUData &imuData);
+	IMUData& operator=(const IMUData &imuData);
 	IMUData(const uint8_t *rawData, uint32_t time, const uint8_t &dataSize);
 	virtual ~IMUData();
 
-	std::shared_ptr<uint8_t[]> getData() const;
+	std::unique_ptr<uint8_t[]> getData() const;
 	uint32_t getTimestamp() const;
-	uint8_t getDataInArray(std::shared_ptr<uint8_t[]> &dataBuffer);
+	uint8_t getDataInArray(std::unique_ptr<uint8_t[]> &dataBuffer);
 	uint8_t getSize() const;
 	uint8_t getObjectDataVolume();
 };
