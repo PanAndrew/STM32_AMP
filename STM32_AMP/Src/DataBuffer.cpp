@@ -19,9 +19,9 @@ DataBuffer<T>::~DataBuffer() {
 	// TODO Auto-generated destructor stub
 }
 template <class T>
-void DataBuffer<T>::put(T item)
+void DataBuffer<T>::put(T *item)
 {
-	buffer[head] = item;
+	buffer[head] = *item;
 
 	if(fullFlag) {
 		tail = (tail + 1) % maxSize;
@@ -41,6 +41,7 @@ T DataBuffer<T>::get()
 
 	//Read data and advance the tail (we now have a free space)
 	auto val = buffer[tail];
+//	buffer[tail] = T();
 	fullFlag = false;
 	tail = (tail + 1) % maxSize;
 

@@ -12,8 +12,10 @@ IMUData::IMUData()
 }
 
 IMUData::IMUData(const IMUData &imuData):
-		data(imuData.getData()), timestamp(imuData.getTimestamp()), size(imuData.getSize())
+		timestamp(imuData.getTimestamp()), size(imuData.getSize())
 {
+	data.reset(new uint8_t[imuData.getSize()]);
+	data = imuData.getData();
 }
 
 IMUData::IMUData(const uint8_t *rawData, uint32_t time, const uint8_t &dataSize):
@@ -41,18 +43,18 @@ uint8_t IMUData::getByte(uint32_t number, uint8_t part)
 	return (number >> (8 * part)) & 0xFF;
 }
 
-uint8_t IMUData::getDataInArray(std::shared_ptr<uint8_t[]> *dataBuffer)
+uint8_t IMUData::getDataInArray(std::shared_ptr<uint8_t[]> &dataBuffer)
 {
 	std::shared_ptr<uint8_t[]> dataToReturn = std::shared_ptr<uint8_t[]>(new uint8_t[10]);
 
-	std::copy(data.get(), data.get() + 6, dataToReturn.get());
+	dataToReturn = data;
 
-	for(uint8_t i = 0; i < 4; i++)
+	for(uint8_t i = 0; i < sizeof(timestamp); i++)
 	{
-		dataToReturn.get()[6 + i] = getByte(timestamp, i);
+		dataToReturn.get()[6 + i] = getByte(timestamp, sizeof(timestamp) - 1 - i);
 	}
 
-	dataBuffer = &dataToReturn;
+	dataBuffer = dataToReturn;
 
 	return size + sizeof(timestamp);
 }

@@ -28,7 +28,7 @@ public:
 
 	std::shared_ptr<uint8_t[]> getData() const;
 	uint32_t getTimestamp() const;
-	uint8_t getDataInArray(std::shared_ptr<uint8_t[]> *dataBuffer);
+	uint8_t getDataInArray(std::shared_ptr<uint8_t[]> &dataBuffer);
 	uint8_t getSize() const;
 	uint8_t getObjectDataVolume();
 };

@@ -86,6 +86,7 @@ IMUSensor imuSensors(10);
 
 uint8_t spiResponse[6];
 uint8_t spiResponse1[6];
+uint8_t buff[100] = {0};
 
 /* USER CODE END PV */
 
@@ -187,10 +188,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		uint8_t accdata = (0x28 | 0x80);
 		uint8_t magdata = 0x03;
 
-
-		HAL_I2C_Mem_Read(&hi2c1, accadr, accdata, 1, spiResponse, 6, 1);
-
-		HAL_I2C_Mem_Read(&hi2c1, magadr, magdata, 1, spiResponse1, 6, 1);
+//		HAL_I2C_Mem_Read(&hi2c1, accadr, accdata, 1, spiResponse, 6, 1);
+//
+//		HAL_I2C_Mem_Read(&hi2c1, magadr, magdata, 1, spiResponse1, 6, 1);
 
 //		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
 //		HAL_SPI_Transmit(&hspi1, &whoami, 1, 1);
@@ -203,6 +203,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
 
 		imuSensors.pullDataFromSensors(&hspi1, &hi2c1);
+
+
+//		imuSensors.getGyroData(buff);
+//
+//		imuSensors.getMagData(buff);
+
 	}
 
 	if (htim->Instance == TIM7)
@@ -284,15 +290,19 @@ int main(void)
   while (1)
   {
 	  sendAllDataFromRB(&huart3, &rxRingBuffer_UART3);
-
+	  imuSensors.getAccData(buff);
 	  dcMotors.forward_R(&htim8, 200);
 	  HAL_Delay(1000);
 	  dcMotors.stop_R();
-	  HAL_Delay(1000);
-	  dcMotors.back_R(&htim8, 200);
-	  HAL_Delay(1000);
-	  dcMotors.stop_R();
-	  HAL_Delay(1000);
+//	  HAL_Delay(1000);
+//	  dcMotors.back_R(&htim8, 200);
+//	  HAL_Delay(1000);
+//	  dcMotors.stop_R();
+//	  HAL_Delay(1000);
+
+
+
+	  std::fill(buff, buff + 100, 0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

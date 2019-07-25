@@ -29,7 +29,7 @@ void IMUSensor::initialize(SPI_HandleTypeDef *hspi, I2C_HandleTypeDef *hi2c)
 void IMUSensor::addToBuffer(DataBuffer<IMUData> &buffer, uint8_t size)
 {
 	IMUData measurement(rawData, HAL_GetTick(), size);
-	buffer.put(measurement);
+	buffer.put(&measurement);
 }
 
 void IMUSensor::pullAccData(I2C_HandleTypeDef *hi2c, uint8_t accDeviceAddr, uint8_t registerAddr, uint8_t size)
@@ -70,9 +70,12 @@ void IMUSensor::pullMagData(I2C_HandleTypeDef *hi2c, uint8_t magDeviceAddr, uint
 
 void IMUSensor::pullDataFromSensors(SPI_HandleTypeDef *hspi, I2C_HandleTypeDef *hi2c)
 {
-	pullGyroData(hspi, GYRO_DATA | GYRO_MULTICONT_READ, GYRO_DATA_SIZE);
-	pullAccData(hi2c, ACC_SENS_ADDR, ACC_DATA | ACC_MULTIBYTE_READ, ACC_DATA_SIZE);
-	pullMagData(hi2c, MAG_SENS_ADDR, MAG_DATA, MAG_DATA_SIZE);
+	if(!readingInProgress)
+	{
+		//pullGyroData(hspi, GYRO_DATA | GYRO_MULTICONT_READ, GYRO_DATA_SIZE);
+		pullAccData(hi2c, ACC_SENS_ADDR, ACC_DATA | ACC_MULTIBYTE_READ,	ACC_DATA_SIZE);
+		//pullMagData(hi2c, MAG_SENS_ADDR, MAG_DATA, MAG_DATA_SIZE);
+	}
 }
 
 void IMUSensor::writeSPI(SPI_HandleTypeDef *hspi, uint8_t *sensorRegAddr, uint8_t *regValue)
@@ -103,12 +106,17 @@ void IMUSensor::configureMag(I2C_HandleTypeDef *hi2c, uint8_t magRegAddr, uint8_
 	writeI2C(hi2c, MAG_SENS_ADDR, &magRegAddr, &regValue);
 }
 
-uint16_t getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer)
+uint16_t IMUSensor::getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer)
 {
+	readingInProgress = 1;
+	uint8_t numberOfElements = buffer.size();
+	if(!numberOfElements)
+	{
+		return 0;
+	}
 	IMUData tempData = buffer.get();
 	std::shared_ptr<uint8_t[]> ptrToArrayData;
-	uint8_t numberOfElements = buffer.size();
-	uint8_t numberOfBytesToCopy = tempData.getDataInArray(&ptrToArrayData);
+	uint8_t numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData);
 	std::unique_ptr<uint8_t[]> tempBuffer(new uint8_t[numberOfElements * numberOfBytesToCopy]);
 
 	std::copy_n(ptrToArrayData.get(), numberOfBytesToCopy, tempBuffer.get());
@@ -116,8 +124,8 @@ uint16_t getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer)
 	for (uint16_t i = 1; i < numberOfElements; i++)
 	{
 		tempData = buffer.get();
-		numberOfBytesToCopy = tempData.getDataInArray(&ptrToArrayData);
-		std::copy_n(ptrToArrayData.get(), numberOfBytesToCopy, tempBuffer.get() + i * numberOfBytesToCopy);
+		numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData);
+		std::copy_n(ptrToArrayData.get(), numberOfBytesToCopy, &(tempBuffer.get()[i * numberOfBytesToCopy]));
 
 		//TO DO
 		//dopisanie informacji do dataBuffer'a (dopisywanie w pętli całego buffora) V
@@ -126,8 +134,9 @@ uint16_t getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer)
 		//poprawić implementacje empty w databuforze
 	}
 
-	dataBuffer = tempBuffer.release();
+	std::move(tempBuffer.get(), tempBuffer.get() + numberOfElements * numberOfBytesToCopy, dataBuffer);
 
+	readingInProgress = 0;
 	return numberOfElements * numberOfBytesToCopy;
 }
 

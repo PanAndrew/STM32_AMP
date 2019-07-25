@@ -22,7 +22,7 @@ public:
 	DataBuffer(uint8_t size);
 	virtual ~DataBuffer();
 
-	void put(T item);
+	void put(T *item);
 	T get();
 	void reset();
 	bool empty() const;

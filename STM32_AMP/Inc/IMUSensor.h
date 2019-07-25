@@ -10,8 +10,6 @@
 
 #include "DataBuffer.h"
 #include "IMUData.h"
-#include "stdint.h"
-#include <algorithm>
 #include "main.h"
 
 #define GYRO_CNT_REG_1 0x20
@@ -51,6 +49,7 @@ class IMUSensor {
 	DataBuffer<IMUData> magBuffer;
 
 	uint8_t rawData[6];
+	bool readingInProgress = 0;
 
 	void pullAccData(I2C_HandleTypeDef *hi2c, uint8_t accDeviceAddr, uint8_t registerAddr, uint8_t size);
 	void pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint8_t size);
@@ -58,6 +57,7 @@ class IMUSensor {
 	void addToBuffer(DataBuffer<IMUData> &buffer, uint8_t size);
 	void writeSPI(SPI_HandleTypeDef *hspi, uint8_t *sensorRegAddr, uint8_t *regValue);
 	void writeI2C(I2C_HandleTypeDef *hi2c, uint8_t sensorAddr , uint8_t *sensorRegAddr, uint8_t *regValue);
+	uint16_t getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer);
 
 public:
 	IMUSensor(uint8_t buffersSize);
@@ -65,7 +65,6 @@ public:
 
 	void initialize(SPI_HandleTypeDef *hspi, I2C_HandleTypeDef *hi2c);
 	void pullDataFromSensors(SPI_HandleTypeDef *hspi, I2C_HandleTypeDef *hi2c);
-	uint16_t getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer);
 	uint16_t getAccData(uint8_t *dataBuffer);
 	uint16_t getGyroData(uint8_t *dataBuffer);
 	uint16_t getMagData(uint8_t *dataBuffer);
