@@ -115,17 +115,17 @@ uint16_t IMUSensor::getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *d
 		return 0;
 	}
 	IMUData tempData = buffer.get();
-	std::array<uint8_t, 10> ptrToArrayData;
-	uint8_t numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData.data());
+	uint8_t ptrToArrayData[10];
+	uint8_t numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData);
 	std::unique_ptr<uint8_t[]> tempBuffer = std::make_unique<uint8_t[]>(numberOfElements * numberOfBytesToCopy);
 
-	std::copy_n(ptrToArrayData.data(), ptrToArrayData.size(), tempBuffer.get());
+	std::copy_n(ptrToArrayData, numberOfBytesToCopy, tempBuffer.get());
 
 	for (uint16_t i = 1; i < numberOfElements; i++)
 	{
 		tempData = buffer.get();
-		numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData.data());
-		std::copy_n(ptrToArrayData.data(), numberOfBytesToCopy, tempBuffer.get() + i * numberOfBytesToCopy);
+		numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData);
+		std::copy_n(ptrToArrayData, numberOfBytesToCopy, tempBuffer.get() + i * numberOfBytesToCopy);
 	}
 
 	std::move(tempBuffer.get(), tempBuffer.get() + numberOfElements * numberOfBytesToCopy, dataBuffer);

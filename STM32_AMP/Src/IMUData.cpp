@@ -11,24 +11,19 @@ IMUData::IMUData()
 {
 }
 
-//IMUData::IMUData(const IMUData &imuData):
-//		data(*(imuData.getData())), timestamp(imuData.getTimestamp()), size(imuData.getSize())
-//{
-//}
-
 IMUData::IMUData(const uint8_t *rawData, uint32_t time, const uint8_t &dataSize):
 		timestamp(time), size(dataSize)
 {
-	std::copy_n(rawData, dataSize, data.data());
+	std::copy_n(rawData, dataSize, data);
 }
 
 IMUData::~IMUData()
 {
 }
 
-std::array<uint8_t, DATASIZE>* IMUData::getData()
+uint8_t* IMUData::getData()
 {
-	return &data;
+	return data;
 }
 
 uint32_t IMUData::getTimestamp()
@@ -43,16 +38,16 @@ uint8_t IMUData::getByte(uint32_t number, uint8_t part)
 
 uint8_t IMUData::getDataInArray(uint8_t* dataBuffer)
 {
-	std::array<uint8_t, OBJECTDATAVOLUME> dataToReturn;
+	uint8_t dataToReturn[OBJECTDATAVOLUME];
 
-	std::copy_n(data.data(), data.size(), dataToReturn.data());
+	std::copy_n(data, DATASIZE, dataToReturn);
 
 	for(uint8_t i = 0; i < sizeof timestamp ; i++)
 	{
 		dataToReturn[6 + i] = getByte(timestamp, sizeof timestamp  - 1 - i);
 	}
 
-	std::copy_n(dataToReturn.data(), dataToReturn.size(), dataBuffer);
+	std::copy_n(dataToReturn, OBJECTDATAVOLUME, dataBuffer);
 
 	return OBJECTDATAVOLUME;
 }

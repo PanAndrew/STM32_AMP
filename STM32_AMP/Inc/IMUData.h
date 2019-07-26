@@ -17,7 +17,7 @@
 
 class IMUData {
 
-	std::array<uint8_t, DATASIZE> data;
+	uint8_t data[DATASIZE];
 	uint32_t timestamp;
 	uint8_t size;
 
@@ -25,11 +25,10 @@ class IMUData {
 
 public:
 	IMUData();
-//	IMUData(const IMUData &imuData);
 	IMUData(const uint8_t *rawData, uint32_t time, const uint8_t &dataSize);
 	virtual ~IMUData();
 
-	std::array<uint8_t, DATASIZE>* getData();
+	uint8_t* getData();
 	uint32_t getTimestamp();
 	uint8_t getDataInArray(uint8_t* dataBuffer);
 	uint8_t getSize();

@@ -84,12 +84,9 @@ Encoder encoder;
 DCMotor dcMotors;
 IMUSensor imuSensors(10);
 
-uint8_t spiResponse[6];
-uint8_t spiResponse1[6];
-uint8_t buffacc[20] = {0};
-uint8_t buffgyro[20] = {0};
-uint8_t buffmag[20] = {0};
-volatile uint32_t timeStamp1, timeStamp2;
+uint8_t buffacc[100] = {0};
+uint8_t buffgyro[100] = {0};
+uint8_t buffmag[100] = {0};
 
 /* USER CODE END PV */
 
@@ -183,37 +180,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //		encoder.countPulsesPerSecond();
 		numbOfMeasurements++;
 
-		uint8_t whoami = 0x0F | 0x80;
-		uint8_t gyroData = 0x28 | 0xC0;
-		uint8_t accadr = (0x19 << 1);
-		uint8_t magadr = (0x1E << 1);
-
-		uint8_t accdata = (0x28 | 0x80);
-		uint8_t magdata = 0x03;
-
-//		HAL_I2C_Mem_Read(&hi2c1, accadr, accdata, 1, spiResponse, 6, 1);
-//
-//		HAL_I2C_Mem_Read(&hi2c1, magadr, magdata, 1, spiResponse1, 6, 1);
-
-//		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
-//		HAL_SPI_Transmit(&hspi1, &whoami, 1, 1);
-//		HAL_SPI_Receive(&hspi1, spiResponse, 1, 1);
-//		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
-//
-//		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
-//		HAL_SPI_Transmit(&hspi1, &gyroData, 1, 1);
-//		HAL_SPI_Receive(&hspi1, spiResponse1, 6, 1);
-//		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
-		timeStamp1 = htim8.Instance->CNT;
 		imuSensors.pullDataFromSensors(&hspi1, &hi2c1);
-		timeStamp2 = htim8.Instance->CNT;
-
-
-		magdata = 0x03;
-//		imuSensors.getGyroData(buff);
-//
-//		imuSensors.getMagData(buff);
-
 	}
 
 	if (htim->Instance == TIM7)
@@ -295,23 +262,20 @@ int main(void)
   while (1)
   {
 	  sendAllDataFromRB(&huart3, &rxRingBuffer_UART3);
-//	  timeStamp1 = htim8.Instance->CNT;
+
 	  imuSensors.getAccData(buffacc);
 	  imuSensors.getGyroData(buffgyro);
 	  imuSensors.getMagData(buffmag);
-//	  timeStamp2 = htim8.Instance->CNT;
+
 	  dcMotors.forward_R(&htim8, 200);
 	  HAL_Delay(1000);
-//	  dcMotors.stop_R();
-//	  HAL_Delay(1000);
-//	  dcMotors.back_R(&htim8, 200);
-//	  HAL_Delay(1000);
-//	  dcMotors.stop_R();
-//	  HAL_Delay(1000);
+	  dcMotors.stop_R();
+	  HAL_Delay(1000);
+	  dcMotors.back_R(&htim8, 200);
+	  HAL_Delay(1000);
+	  dcMotors.stop_R();
+	  HAL_Delay(1000);
 
-	  std::fill(buffacc, buffacc + 20, 0);
-	  std::fill(buffgyro, buffgyro + 20, 0);
-	  std::fill(buffmag, buffmag + 20, 0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
