@@ -9,12 +9,15 @@
 #define IMUDATA_H_
 
 #include "stdint.h"
+#include <array>
 #include <algorithm>
-#include <memory>
+
+#define DATASIZE 6
+#define OBJECTDATAVOLUME (DATASIZE + sizeof(uint32_t))
 
 class IMUData {
 
-	std::shared_ptr<uint8_t[]> data;
+	std::array<uint8_t, DATASIZE> data;
 	uint32_t timestamp;
 	uint8_t size;
 
@@ -22,15 +25,14 @@ class IMUData {
 
 public:
 	IMUData();
-	IMUData(const IMUData &imuData);
-	IMUData& operator=(const IMUData &imuData);
+//	IMUData(const IMUData &imuData);
 	IMUData(const uint8_t *rawData, uint32_t time, const uint8_t &dataSize);
 	virtual ~IMUData();
 
-	std::shared_ptr<uint8_t[]> getData() const;
-	uint32_t getTimestamp() const;
-	uint8_t getDataInArray(std::shared_ptr<uint8_t[]> &dataBuffer);
-	uint8_t getSize() const;
+	std::array<uint8_t, DATASIZE>* getData();
+	uint32_t getTimestamp();
+	uint8_t getDataInArray(uint8_t* dataBuffer);
+	uint8_t getSize();
 	uint8_t getObjectDataVolume();
 };
 

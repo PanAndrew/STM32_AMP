@@ -72,9 +72,9 @@ void IMUSensor::pullDataFromSensors(SPI_HandleTypeDef *hspi, I2C_HandleTypeDef *
 {
 	if(!readingInProgress)
 	{
-		//pullGyroData(hspi, GYRO_DATA | GYRO_MULTICONT_READ, GYRO_DATA_SIZE);
+		pullGyroData(hspi, GYRO_DATA | GYRO_MULTICONT_READ, GYRO_DATA_SIZE);
 		pullAccData(hi2c, ACC_SENS_ADDR, ACC_DATA | ACC_MULTIBYTE_READ,	ACC_DATA_SIZE);
-		//pullMagData(hi2c, MAG_SENS_ADDR, MAG_DATA, MAG_DATA_SIZE);
+		pullMagData(hi2c, MAG_SENS_ADDR, MAG_DATA, MAG_DATA_SIZE);
 	}
 }
 
@@ -115,24 +115,21 @@ uint16_t IMUSensor::getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *d
 		return 0;
 	}
 	IMUData tempData = buffer.get();
-	std::shared_ptr<uint8_t[]> ptrToArrayData(new uint8_t[tempData.getObjectDataVolume()], [](uint8_t *ptr) { delete[] ptr;});
-	uint8_t numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData);
+	std::array<uint8_t, 10> ptrToArrayData;
+	uint8_t numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData.data());
 	std::unique_ptr<uint8_t[]> tempBuffer = std::make_unique<uint8_t[]>(numberOfElements * numberOfBytesToCopy);
 
-	std::move(ptrToArrayData.get(), ptrToArrayData.get() + numberOfBytesToCopy, tempBuffer.get());
-	ptrToArrayData.reset();
+	std::copy_n(ptrToArrayData.data(), ptrToArrayData.size(), tempBuffer.get());
 
 	for (uint16_t i = 1; i < numberOfElements; i++)
 	{
 		tempData = buffer.get();
-		numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData);
-		std::move(ptrToArrayData.get(), ptrToArrayData.get() + numberOfBytesToCopy, &(tempBuffer.get()[i * numberOfBytesToCopy]));
-		ptrToArrayData.reset();
+		numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData.data());
+		std::copy_n(ptrToArrayData.data(), numberOfBytesToCopy, tempBuffer.get() + i * numberOfBytesToCopy);
 	}
 
 	std::move(tempBuffer.get(), tempBuffer.get() + numberOfElements * numberOfBytesToCopy, dataBuffer);
 
-	tempBuffer.reset(nullptr);
 	readingInProgress = 0;
 	return numberOfElements * numberOfBytesToCopy;
 }

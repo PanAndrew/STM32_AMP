@@ -86,7 +86,10 @@ IMUSensor imuSensors(10);
 
 uint8_t spiResponse[6];
 uint8_t spiResponse1[6];
-uint8_t buff[100] = {0};
+uint8_t buffacc[20] = {0};
+uint8_t buffgyro[20] = {0};
+uint8_t buffmag[20] = {0};
+volatile uint32_t timeStamp1, timeStamp2;
 
 /* USER CODE END PV */
 
@@ -201,10 +204,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //		HAL_SPI_Transmit(&hspi1, &gyroData, 1, 1);
 //		HAL_SPI_Receive(&hspi1, spiResponse1, 6, 1);
 //		HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
-
+		timeStamp1 = htim8.Instance->CNT;
 		imuSensors.pullDataFromSensors(&hspi1, &hi2c1);
+		timeStamp2 = htim8.Instance->CNT;
 
 
+		magdata = 0x03;
 //		imuSensors.getGyroData(buff);
 //
 //		imuSensors.getMagData(buff);
@@ -290,19 +295,23 @@ int main(void)
   while (1)
   {
 	  sendAllDataFromRB(&huart3, &rxRingBuffer_UART3);
-	  imuSensors.getAccData(buff);
+//	  timeStamp1 = htim8.Instance->CNT;
+	  imuSensors.getAccData(buffacc);
+	  imuSensors.getGyroData(buffgyro);
+	  imuSensors.getMagData(buffmag);
+//	  timeStamp2 = htim8.Instance->CNT;
 	  dcMotors.forward_R(&htim8, 200);
 	  HAL_Delay(1000);
-	  dcMotors.stop_R();
+//	  dcMotors.stop_R();
 //	  HAL_Delay(1000);
 //	  dcMotors.back_R(&htim8, 200);
 //	  HAL_Delay(1000);
 //	  dcMotors.stop_R();
 //	  HAL_Delay(1000);
 
-
-
-	  std::fill(buff, buff + 100, 0);
+	  std::fill(buffacc, buffacc + 20, 0);
+	  std::fill(buffgyro, buffgyro + 20, 0);
+	  std::fill(buffmag, buffmag + 20, 0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

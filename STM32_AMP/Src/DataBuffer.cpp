@@ -41,7 +41,6 @@ T DataBuffer<T>::get()
 
 	//Read data and advance the tail (we now have a free space)
 	auto val = buffer[tail];
-//	buffer[tail] = T();
 	fullFlag = false;
 	tail = (tail + 1) % maxSize;
 
