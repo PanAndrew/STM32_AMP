@@ -115,27 +115,24 @@ uint16_t IMUSensor::getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *d
 		return 0;
 	}
 	IMUData tempData = buffer.get();
-	std::unique_ptr<uint8_t[]> ptrToArrayData;
+	std::shared_ptr<uint8_t[]> ptrToArrayData(new uint8_t[tempData.getObjectDataVolume()], [](uint8_t *ptr) { delete[] ptr;});
 	uint8_t numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData);
-	std::unique_ptr<uint8_t[]> tempBuffer(new uint8_t[numberOfElements * numberOfBytesToCopy]);
+	std::unique_ptr<uint8_t[]> tempBuffer = std::make_unique<uint8_t[]>(numberOfElements * numberOfBytesToCopy);
 
-	std::copy_n(ptrToArrayData.get(), numberOfBytesToCopy, tempBuffer.get());
+	std::move(ptrToArrayData.get(), ptrToArrayData.get() + numberOfBytesToCopy, tempBuffer.get());
+	ptrToArrayData.reset();
 
 	for (uint16_t i = 1; i < numberOfElements; i++)
 	{
 		tempData = buffer.get();
 		numberOfBytesToCopy = tempData.getDataInArray(ptrToArrayData);
-		std::copy_n(ptrToArrayData.get(), numberOfBytesToCopy, &(tempBuffer.get()[i * numberOfBytesToCopy]));
-
-		//TO DO
-		//dopisanie informacji do dataBuffer'a (dopisywanie w pętli całego buffora) V
-		//głowny dataManagement
-		//swap danych y i z V
-		//poprawić implementacje empty w databuforze
+		std::move(ptrToArrayData.get(), ptrToArrayData.get() + numberOfBytesToCopy, &(tempBuffer.get()[i * numberOfBytesToCopy]));
+		ptrToArrayData.reset();
 	}
 
 	std::move(tempBuffer.get(), tempBuffer.get() + numberOfElements * numberOfBytesToCopy, dataBuffer);
 
+	tempBuffer.reset(nullptr);
 	readingInProgress = 0;
 	return numberOfElements * numberOfBytesToCopy;
 }
