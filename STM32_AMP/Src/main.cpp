@@ -33,8 +33,7 @@ extern "C"
 #include "DCMotor.h"
 #include "IMUSensor.h"
 #include "DataPtrVolumePair.h"
-#include <map>
-#include <functional>
+#include "DataManagement.h"
 
 /* USER CODE END Includes */
 
@@ -64,6 +63,8 @@ extern "C"
 #define SIZE_GET_MAG 10
 #define SIZE_GET_ENCODER 2
 #define SIZE_GET_GPS 20
+
+#define IMU_NUM_OF_ELEM 10
 
 /* USER CODE END PD */
 
@@ -101,22 +102,17 @@ uint32_t numbOfMeasurements;
 RINGBUFF_T rxRingBuffer_UART3;
 Encoder encoder;
 DCMotor dcMotors;
-IMUSensor imuSensors(10);
+IMUSensor imuSensors(IMU_NUM_OF_ELEM);
+DataManagement dataManagement;
 
-std::map<uint8_t, DataPtrVolumePair> dataPtrMap = {
-			{ID_PWM, DataPtrVolumePair{SIZE_GET_PWM, std::bind(&DCMotor::getDataInArray, &dcMotors, std::placeholders::_1)}},
-			{ID_ACC, DataPtrVolumePair{SIZE_GET_ACC, std::bind(&IMUSensor::getAccData, &imuSensors, std::placeholders::_1)}},
-			{ID_GYRO, DataPtrVolumePair{SIZE_GET_GYRO, std::bind(&IMUSensor::getGyroData, &imuSensors, std::placeholders::_1)}},
-			{ID_MAG, DataPtrVolumePair{SIZE_GET_MAG, std::bind(&IMUSensor::getMagData, &imuSensors, std::placeholders::_1)}},
-			{ID_ENCODER, DataPtrVolumePair{SIZE_GET_ENCODER, std::bind(&Encoder::getDataInArray, &encoder, std::placeholders::_1)}} };
-
-//std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
-//		{
-//			{ID_PWM, std::make_pair(SIZE_GET_PWM, std::bind(&DCMotor::getDataInArray, &dcMotors, std::placeholders::_1))},
-//			{ID_ACC, std::make_pair(SIZE_GET_ACC, std::bind(&IMUSensor::getAccData, &imuSensors, std::placeholders::_1))},
-//			{ID_GYRO, std::make_pair(SIZE_GET_GYRO, std::bind(&IMUSensor::getGyroData, &imuSensors, std::placeholders::_1))},
-//			{ID_MAG, std::make_pair(SIZE_GET_MAG, std::bind(&IMUSensor::getMagData, &imuSensors, std::placeholders::_1))},
-//			{ID_ENCODER, std::make_pair(SIZE_GET_ENCODER, std::bind(&Encoder::getDataInArray, &encoder, std::placeholders::_1))} };
+std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
+{
+	{ID_PWM, DataPtrVolumePair{1, SIZE_GET_PWM, std::bind(&DCMotor::getDataInArray, &dcMotors, std::placeholders::_1)}},
+	{ID_ACC, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_ACC, std::bind(&IMUSensor::getAccData, &imuSensors, std::placeholders::_1)}},
+	{ID_GYRO, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_GYRO, std::bind(&IMUSensor::getGyroData, &imuSensors, std::placeholders::_1)}},
+	{ID_MAG, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_MAG, std::bind(&IMUSensor::getMagData, &imuSensors, std::placeholders::_1)}},
+	{ID_ENCODER, DataPtrVolumePair{1, SIZE_GET_ENCODER, std::bind(&Encoder::getDataInArray, &encoder, std::placeholders::_1)}}
+};
 
 uint8_t buffacc[100] = {0};
 uint8_t buffgyro[100] = {0};
@@ -281,6 +277,8 @@ int main(void)
   HAL_SPI_Init(&hspi1);
   HAL_I2C_Init(&hi2c1);
   imuSensors.initialize(&hspi1, &hi2c1);
+
+  dataManagement.configure(&dataPtrMap);
 
   HAL_UART_Receive_DMA(&huart3, rxBuffer_UART3, UART3_BUFFER_SIZE);
 
