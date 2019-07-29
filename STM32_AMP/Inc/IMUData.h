@@ -13,7 +13,7 @@
 #include <algorithm>
 
 #define DATASIZE 6
-#define OBJECTDATAVOLUME (DATASIZE + sizeof(uint32_t))
+#define IMU_OBJECTDATAVOLUME (DATASIZE + sizeof(uint32_t))
 
 class IMUData {
 

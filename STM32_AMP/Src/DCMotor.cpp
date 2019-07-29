@@ -90,3 +90,16 @@ void DCMotor::stop_L(void)
 	stop(GPIOD, BridgeB_1_Pin, BridgeB_2_Pin);
 	motorStatus[LEFT_MOTOR] = idle;
 }
+
+uint8_t DCMotor::getDataInArray(uint8_t* dataBuffer)
+{
+	uint8_t dataToReturn[MOTOR_OBJECTDATAVOLUME];
+
+	dataToReturn[0] = (motorStatus[LEFT_MOTOR] << 4) | motorStatus[RIGHT_MOTOR];
+
+	std::copy_n(pwmValue, sizeof pwmValue, dataToReturn);
+
+	std::copy_n(dataToReturn, MOTOR_OBJECTDATAVOLUME, dataBuffer);
+
+	return MOTOR_OBJECTDATAVOLUME;
+}

@@ -10,9 +10,12 @@
 
 #include "stdint.h"
 #include "main.h"
+#include <algorithm>
 
 #define LEFT_MOTOR 0
 #define RIGHT_MOTOR 1
+
+#define MOTOR_OBJECTDATAVOLUME 5
 
 class DCMotor {
 
@@ -40,6 +43,8 @@ public:
 	void back_L(TIM_HandleTypeDef *htim, uint16_t pwmValue);
 	void stop_R(void);
 	void stop_L(void);
+
+	uint8_t getDataInArray(uint8_t* dataBuffer);
 
 };
 

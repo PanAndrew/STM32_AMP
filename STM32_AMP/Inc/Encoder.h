@@ -9,9 +9,12 @@
 #define ENCODER_H_
 
 #include "stdint.h"
+#include <algorithm>
 
 #define LEFT_ENCODER 0
 #define RIGHT_ENCODER 1
+
+#define ENCODER_OBJECTDATAVOLUME 4
 
 class Encoder {
 
@@ -25,6 +28,7 @@ public:
 	void incrementEncoderPulse(uint8_t encoderNum);
 	void countPulsesPerSecond(void);
 	uint16_t getPulsePerSecond(uint8_t &encoderNum);
+	uint8_t getDataInArray(uint8_t* dataBuffer);
 };
 
 #endif /* ENCODER_H_ */

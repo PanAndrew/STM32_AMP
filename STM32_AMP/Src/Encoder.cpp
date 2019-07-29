@@ -33,3 +33,10 @@ uint16_t Encoder::getPulsePerSecond(uint8_t &encoderNum)
 {
 	return encoderPPSec[encoderNum];
 }
+
+uint8_t Encoder::getDataInArray(uint8_t* dataBuffer)
+{
+	std::copy_n(encoderPPSec, ENCODER_OBJECTDATAVOLUME, dataBuffer);
+
+	return ENCODER_OBJECTDATAVOLUME;
+}

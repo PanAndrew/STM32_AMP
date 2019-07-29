@@ -38,7 +38,7 @@ uint8_t IMUData::getByte(uint32_t number, uint8_t part)
 
 uint8_t IMUData::getDataInArray(uint8_t* dataBuffer)
 {
-	uint8_t dataToReturn[OBJECTDATAVOLUME];
+	uint8_t dataToReturn[IMU_OBJECTDATAVOLUME];
 
 	std::copy_n(data, DATASIZE, dataToReturn);
 
@@ -47,9 +47,9 @@ uint8_t IMUData::getDataInArray(uint8_t* dataBuffer)
 		dataToReturn[6 + i] = getByte(timestamp, sizeof timestamp  - 1 - i);
 	}
 
-	std::copy_n(dataToReturn, OBJECTDATAVOLUME, dataBuffer);
+	std::copy_n(dataToReturn, IMU_OBJECTDATAVOLUME, dataBuffer);
 
-	return OBJECTDATAVOLUME;
+	return IMU_OBJECTDATAVOLUME;
 }
 
 uint8_t IMUData::getSize()
@@ -59,5 +59,5 @@ uint8_t IMUData::getSize()
 
 uint8_t IMUData::getObjectDataVolume()
 {
-	return OBJECTDATAVOLUME;
+	return IMU_OBJECTDATAVOLUME;
 }

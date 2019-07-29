@@ -32,6 +32,9 @@ extern "C"
 #include "Encoder.h"
 #include "DCMotor.h"
 #include "IMUSensor.h"
+#include "DataPtrVolumePair.h"
+#include <map>
+#include <functional>
 
 /* USER CODE END Includes */
 
@@ -45,6 +48,22 @@ extern "C"
 
 #define UART3_BUFFER_SIZE 64
 #define UART3_RB_SIZE 128
+
+#define ID_PWM 0x02
+#define ID_TIM 0x03
+#define ID_ACC 0x04
+#define ID_GYRO 0x05
+#define ID_MAG 0x06
+#define ID_ENCODER 0x07
+#define ID_GPS 0x08
+
+#define SIZE_GET_PWM 5
+#define SIZE_GET_TIM 16
+#define SIZE_GET_ACC 10
+#define SIZE_GET_GYRO 10
+#define SIZE_GET_MAG 10
+#define SIZE_GET_ENCODER 2
+#define SIZE_GET_GPS 20
 
 /* USER CODE END PD */
 
@@ -83,6 +102,21 @@ RINGBUFF_T rxRingBuffer_UART3;
 Encoder encoder;
 DCMotor dcMotors;
 IMUSensor imuSensors(10);
+
+std::map<uint8_t, DataPtrVolumePair> dataPtrMap = {
+			{ID_PWM, DataPtrVolumePair{SIZE_GET_PWM, std::bind(&DCMotor::getDataInArray, &dcMotors, std::placeholders::_1)}},
+			{ID_ACC, DataPtrVolumePair{SIZE_GET_ACC, std::bind(&IMUSensor::getAccData, &imuSensors, std::placeholders::_1)}},
+			{ID_GYRO, DataPtrVolumePair{SIZE_GET_GYRO, std::bind(&IMUSensor::getGyroData, &imuSensors, std::placeholders::_1)}},
+			{ID_MAG, DataPtrVolumePair{SIZE_GET_MAG, std::bind(&IMUSensor::getMagData, &imuSensors, std::placeholders::_1)}},
+			{ID_ENCODER, DataPtrVolumePair{SIZE_GET_ENCODER, std::bind(&Encoder::getDataInArray, &encoder, std::placeholders::_1)}} };
+
+//std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
+//		{
+//			{ID_PWM, std::make_pair(SIZE_GET_PWM, std::bind(&DCMotor::getDataInArray, &dcMotors, std::placeholders::_1))},
+//			{ID_ACC, std::make_pair(SIZE_GET_ACC, std::bind(&IMUSensor::getAccData, &imuSensors, std::placeholders::_1))},
+//			{ID_GYRO, std::make_pair(SIZE_GET_GYRO, std::bind(&IMUSensor::getGyroData, &imuSensors, std::placeholders::_1))},
+//			{ID_MAG, std::make_pair(SIZE_GET_MAG, std::bind(&IMUSensor::getMagData, &imuSensors, std::placeholders::_1))},
+//			{ID_ENCODER, std::make_pair(SIZE_GET_ENCODER, std::bind(&Encoder::getDataInArray, &encoder, std::placeholders::_1))} };
 
 uint8_t buffacc[100] = {0};
 uint8_t buffgyro[100] = {0};
