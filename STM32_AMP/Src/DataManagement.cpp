@@ -48,9 +48,9 @@ uint16_t DataManagement::calcRefArrDataSize()
 	uint16_t size = 0;
 	DataPtrVolumePair* tempObj;
 
-	for(auto iter : refDataArray)
+	for(auto indexID : refDataArray)
 	{
-		tempObj = &dataPtrMap->at(iter);
+		tempObj = &dataPtrMap->at(indexID);
 		size += tempObj->getNumberOfElements() * tempObj->getSizeOfElement();
 	}
 
@@ -68,12 +68,18 @@ void DataManagement::sendData()
 {
 	std::unique_ptr<uint8_t[]> dataBuffer = std::make_unique<uint8_t[]>(maxDataSize);
 	uint16_t dataSize = 0;
+	uint8_t returnedSize = 0;
 
-	for(auto iter : refDataArray)
+	for(auto indexID : refDataArray)
 	{
-		dataBuffer[dataSize] = iter;
+		dataBuffer[dataSize] = indexID;
 		dataSize++;
-		dataSize += dataPtrMap->at(iter).getFunction()(dataBuffer.get() + dataSize);
+
+		returnedSize = dataPtrMap->at(indexID).getFunction()(dataBuffer.get() + dataSize);
+		dataBuffer[dataSize + returnedSize] = returnedSize;
+
+		dataSize++;
+		dataSize += returnedSize;
 	}
 }
 
