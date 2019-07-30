@@ -75,10 +75,9 @@ void DataManagement::sendData()
 		dataBuffer[dataSize] = indexID;
 		dataSize++;
 
-		returnedSize = dataPtrMap->at(indexID).getFunction()(dataBuffer.get() + dataSize);
-		dataBuffer[dataSize + returnedSize] = returnedSize;
+		returnedSize = dataPtrMap->at(indexID).getFunction()(&dataBuffer[++dataSize]);
+		dataBuffer[dataSize - 1] = returnedSize;
 
-		dataSize++;
 		dataSize += returnedSize;
 	}
 }
