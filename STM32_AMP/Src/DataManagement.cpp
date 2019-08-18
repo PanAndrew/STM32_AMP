@@ -25,20 +25,24 @@ void DataManagement::configure(std::map<uint8_t, DataPtrVolumePair>* ptrMap)
 	std::unique_ptr<uint8_t[]> tempArray = std::make_unique<uint8_t[]>(dataPtrMap->size());
 
 	uint8_t i = 0;
-	for(auto iter : *dataPtrMap)
+	for(auto const &iter : *dataPtrMap)
 	{
 		tempArray[i] = iter.first;
 		i++;
 	}
 
-	confRefArray(tempArray.get());
+	confRefArray(tempArray.get(), dataPtrMap->size());
 }
 
-void DataManagement::confRefArray(uint8_t* confArray)
+void DataManagement::confRefArray(uint8_t* confArray, uint8_t numbOfElem)
 {
 	refDataArray.clear();
-	refDataArray.reserve(sizeof confArray / sizeof(uint8_t));
-	std::copy_n(confArray, sizeof confArray / sizeof(uint8_t), refDataArray.data());
+	refDataArray.reserve(numbOfElem);
+
+	for(uint8_t i = 0; i < numbOfElem; i++)
+	{
+		refDataArray.push_back(confArray[i]);
+	}
 
 	maxDataSize = calcRefArrDataSize();
 }
@@ -48,13 +52,13 @@ uint16_t DataManagement::calcRefArrDataSize()
 	uint16_t size = 0;
 	DataPtrVolumePair* tempObj;
 
-	for(auto indexID : refDataArray)
+	for(uint8_t indexID : refDataArray)
 	{
-		tempObj = &dataPtrMap->at(indexID);
+		tempObj = &(dataPtrMap->at(indexID));
 		size += tempObj->getNumberOfElements() * tempObj->getSizeOfElement();
 	}
 
-	return size;
+	return size + (2 * refDataArray.size());
 }
 
 uint8_t DataManagement::getConfigInArray(uint8_t* dataBuffer)
@@ -64,7 +68,7 @@ uint8_t DataManagement::getConfigInArray(uint8_t* dataBuffer)
 	return refDataArray.size();
 }
 
-void DataManagement::sendData()
+void DataManagement::sendData(uint8_t* globalBuffer)
 {
 	std::unique_ptr<uint8_t[]> dataBuffer = std::make_unique<uint8_t[]>(maxDataSize);
 	uint16_t dataSize = 0;
@@ -80,5 +84,7 @@ void DataManagement::sendData()
 
 		dataSize += returnedSize;
 	}
+
+	std::copy_n(dataBuffer.get(), dataSize, globalBuffer);
 }
 

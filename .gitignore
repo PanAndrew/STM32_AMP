@@ -1,5 +1,8 @@
 .metadata/
 gpio_Test/
+Eternet_test2/
+Ethernet_test/
+IMU_test/
 STM32_AMP/Debug/
 STM32_AMP/core
 

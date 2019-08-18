@@ -61,7 +61,7 @@ extern "C"
 #define SIZE_GET_ACC 10
 #define SIZE_GET_GYRO 10
 #define SIZE_GET_MAG 10
-#define SIZE_GET_ENCODER 2
+#define SIZE_GET_ENCODER 4
 #define SIZE_GET_GPS 20
 
 #define IMU_NUM_OF_ELEM 10
@@ -117,6 +117,8 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 uint8_t buffacc[100] = {0};
 uint8_t buffgyro[100] = {0};
 uint8_t buffmag[100] = {0};
+
+uint8_t globalBuff[320] = {0};
 
 /* USER CODE END PV */
 
@@ -210,7 +212,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //		encoder.countPulsesPerSecond();
 		numbOfMeasurements++;
 
-		imuSensors.pullDataFromSensors(&hspi1, &hi2c1);
+		imuSensors.pullDataFromSensorsI2C(&hi2c1);
+		imuSensors.pullDataFromSensorsSPI(&hspi1);
 	}
 
 	if (htim->Instance == TIM7)
@@ -276,7 +279,8 @@ int main(void)
 
   HAL_SPI_Init(&hspi1);
   HAL_I2C_Init(&hi2c1);
-  imuSensors.initialize(&hspi1, &hi2c1);
+  imuSensors.initializeI2C_Sensors(&hi2c1);
+  imuSensors.initializeSPI_Sensors(&hspi1);
 
   dataManagement.configure(&dataPtrMap);
 
@@ -295,9 +299,9 @@ int main(void)
   {
 	  sendAllDataFromRB(&huart3, &rxRingBuffer_UART3);
 
-	  imuSensors.getAccData(buffacc);
-	  imuSensors.getGyroData(buffgyro);
-	  imuSensors.getMagData(buffmag);
+//	  imuSensors.getAccData(buffacc);
+//	  imuSensors.getGyroData(buffgyro);
+//	  imuSensors.getMagData(buffmag);
 
 	  dcMotors.forward_R(&htim8, 200);
 	  HAL_Delay(1000);
@@ -308,6 +312,7 @@ int main(void)
 	  dcMotors.stop_R();
 	  HAL_Delay(1000);
 
+	  dataManagement.sendData(globalBuff);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
