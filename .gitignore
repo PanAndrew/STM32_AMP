@@ -3,8 +3,10 @@ gpio_Test/
 Eternet_test2/
 Ethernet_test/
 IMU_test/
-STM32_AMP/Debug/
-STM32_AMP/core
+STM32F3_AMP/Debug/
+STM32F3_AMP/core
+STM32F4_AMP/Debug/
+STM32F4_AMP/core
 
 # Prerequisites
 *.d
