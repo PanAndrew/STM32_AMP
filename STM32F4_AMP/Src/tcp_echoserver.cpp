@@ -38,10 +38,18 @@
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 #include "lwip/tcp.h"
+#include "DataManagement.h"
+#include "DCMotor.h"
+#include "globalDefines.h"
 
 #if LWIP_TCP
 
 static struct tcp_pcb *tcp_echoserver_pcb;
+
+//extern Encoder encoder;
+extern DCMotor dcMotors;
+//extern IMUSensor imuSensors(IMU_NUM_OF_ELEM);
+extern DataManagement dataManagement;
 
 /* ECHO protocol states */
 enum tcp_echoserver_states
@@ -156,6 +164,34 @@ static err_t tcp_echoserver_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
   return ret_err;  
 }
 
+void manageRecaivedData(struct tcp_echoserver_struct *es)
+{
+	uint8_t *data = static_cast<uint8_t*>(es->p->payload);
+	uint16_t iter = 0;
+	uint16_t dataLengthRemain = es->p->len;
+
+	while (dataLengthRemain - iter)
+	{
+		switch (data[iter])
+		{
+		case 0:
+			iter++;
+			dataManagement.confRefArray(&data[iter], dataLengthRemain - iter);
+			iter += (dataLengthRemain - iter);
+			break;
+		case ID_PWM << 1:
+			iter++;
+			dcMotors.configureDesiredPWM(&data[iter]);
+			iter += SIZE_GET_PWM;
+			break;
+		default:
+			pbuf_free (es->p);
+		}
+		dataLengthRemain -= iter;
+	}
+
+	pbuf_free (es->p);
+}
 
 /**
   * @brief  This function is the implementation for tcp_recv LwIP callback
@@ -214,11 +250,13 @@ static err_t tcp_echoserver_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
     /* store reference to incoming pbuf (chain) */
     es->p = p;
     
+    manageRecaivedData(es);
+
     /* initialize LwIP tcp_sent callback function */
-    tcp_sent(tpcb, tcp_echoserver_sent);
-    
+//    tcp_sent(tpcb, tcp_echoserver_sent);
+
     /* send back the received data (echo) */
-    tcp_echoserver_send(tpcb, es);
+//    tcp_echoserver_send(tpcb, es);
     
     ret_err = ERR_OK;
   }
@@ -229,8 +267,10 @@ static err_t tcp_echoserver_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
     {
       es->p = p;
   
+      manageRecaivedData(es);
+
       /* send back received data */
-      tcp_echoserver_send(tpcb, es);
+//      tcp_echoserver_send(tpcb, es);
     }
     else
     {

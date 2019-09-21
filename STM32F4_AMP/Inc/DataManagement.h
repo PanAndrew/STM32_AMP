@@ -18,7 +18,6 @@ class DataManagement {
 	std::vector<uint8_t> refDataArray;
 	uint16_t maxDataSize;
 
-	void confRefArray(uint8_t * confArray, uint8_t numbOfElem);
 	uint16_t calcRefArrDataSize();
 
 public:
@@ -26,6 +25,7 @@ public:
 	virtual ~DataManagement();
 
 	void configure(std::map<uint8_t, DataPtrVolumePair>* ptrMap);
+	void confRefArray(uint8_t * confArray, uint8_t numbOfElem);
 	uint8_t getConfigInArray(uint8_t* dataBuffer);
 	uint16_t getCollectedData(uint8_t* globalBuffer);
 	uint16_t getMaxDataSize();

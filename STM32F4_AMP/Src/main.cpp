@@ -30,12 +30,8 @@
 #include "IMUSensor.h"
 #include "DataPtrVolumePair.h"
 #include "DataManagement.h"
-
-extern "C"
-{
-	#include "tcp_echoserver.h"
-	#include "tcp_echoclient.h"
-}
+#include "tcp_echoserver.h"
+#include "tcp_echoclient.h"
 
 /* USER CODE END Includes */
 
@@ -47,23 +43,7 @@ extern "C"
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define ID_PWM 0x02
-#define ID_TIM 0x03
-#define ID_ACC 0x04
-#define ID_GYRO 0x05
-#define ID_MAG 0x06
-#define ID_ENCODER 0x07
-#define ID_GPS 0x08
-
-#define SIZE_GET_PWM 5
-#define SIZE_GET_TIM 16
-#define SIZE_GET_ACC 10
-#define SIZE_GET_GYRO 10
-#define SIZE_GET_MAG 10
-#define SIZE_GET_ENCODER 4
-#define SIZE_GET_GPS 20
-
-#define IMU_NUM_OF_ELEM 10
+#include "globalDefines.h"
 
 /* USER CODE END PD */
 
@@ -85,7 +65,7 @@ TIM_HandleTypeDef htim9;
 /* USER CODE BEGIN PV */
 
 Encoder encoder;
-DCMotor dcMotors;
+DCMotor dcMotors(&htim8);
 IMUSensor imuSensors(IMU_NUM_OF_ELEM);
 DataManagement dataManagement;
 

@@ -7,9 +7,8 @@
 
 #include "DCMotor.h"
 
-DCMotor::DCMotor() {
-	// TODO Auto-generated constructor stub
-
+DCMotor::DCMotor(TIM_HandleTypeDef *timer) {
+	this->htim = timer;
 }
 
 DCMotor::~DCMotor() {
@@ -89,6 +88,47 @@ void DCMotor::stop_L(void)
 {
 	stop(BRIDGE_B1_GPIO_Port, BRIDGE_B1_Pin, BRIDGE_B2_GPIO_Port, BRIDGE_B2_Pin);
 	motorStatus[LEFT_MOTOR] = idle;
+}
+
+void DCMotor::configureDesiredPWM(uint8_t* dataBuffer)
+{
+	uint8_t directions[2];
+	directions[LEFT_MOTOR] = dataBuffer[DIRECTIONS_COMMAND] & 0xF;
+	directions[RIGHT_MOTOR] = dataBuffer[DIRECTIONS_COMMAND] & 0xF0;
+
+	uint16_t desiredPWMs[2];
+	desiredPWMs[LEFT_MOTOR] = dataBuffer[LEFT_PWM_COMMAND_H] << 8 | dataBuffer[LEFT_PWM_COMMAND_L];
+	desiredPWMs[RIGHT_MOTOR] = dataBuffer[RIGHT_PWM_COMMAND_H] << 8 | dataBuffer[RIGHT_PWM_COMMAND_L];
+
+	makeManeuver(LEFT_MOTOR, directions[LEFT_MOTOR], desiredPWMs[LEFT_MOTOR]);
+	makeManeuver(RIGHT_MOTOR, directions[RIGHT_MOTOR], desiredPWMs[RIGHT_MOTOR]);
+}
+
+void DCMotor::makeManeuver(uint8_t motorID, uint8_t maneuver, uint16_t pwmData)
+{
+	switch (maneuver)
+	{
+		case 0:
+			if(motorID == LEFT_MOTOR)
+				stop_L();
+			else
+				stop_R();
+			break;
+		case 1:
+			if(motorID == LEFT_MOTOR)
+				forward_L(htim, pwmData);
+			else
+				forward_R(htim, pwmData);
+			break;
+		case 2:
+			if(motorID == LEFT_MOTOR)
+				back_L(htim, pwmData);
+			else
+				back_R(htim, pwmData);
+			break;
+		default:
+			break;
+	}
 }
 
 uint8_t DCMotor::getDataInArray(uint8_t* dataBuffer)
