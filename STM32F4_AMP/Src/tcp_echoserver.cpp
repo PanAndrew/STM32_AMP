@@ -176,13 +176,29 @@ void manageRecaivedData(struct tcp_echoserver_struct *es)
 		{
 		case 0:
 			iter++;
-			dataManagement.confRefArray(&data[iter], dataLengthRemain - iter);
-			iter += (dataLengthRemain - iter);
+			if(dataLengthRemain - iter > 0)
+			{
+				dataManagement.confRefArray(&data[iter], dataLengthRemain - iter);
+				iter += (dataLengthRemain - iter);
+			}
+			else
+			{
+				dataLengthRemain = 0;
+				continue;
+			}
 			break;
 		case ID_PWM << 1:
 			iter++;
-			dcMotors.configureDesiredPWM(&data[iter]);
-			iter += SIZE_GET_PWM;
+			if(dataLengthRemain > SIZE_GET_PWM)
+			{
+				dcMotors.configureDesiredPWM(&data[iter]);
+				iter += SIZE_GET_PWM;
+			}
+			else
+			{
+				dataLengthRemain = 0;
+				continue;
+			}
 			break;
 		default:
 			pbuf_free (es->p);

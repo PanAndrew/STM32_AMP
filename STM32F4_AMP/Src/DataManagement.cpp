@@ -41,7 +41,10 @@ void DataManagement::confRefArray(uint8_t* confArray, uint8_t numbOfElem)
 
 	for(uint8_t i = 0; i < numbOfElem; i++)
 	{
-		refDataArray.push_back(confArray[i]);
+		if(dataPtrMap->find(confArray[i]) != dataPtrMap->end())
+		{
+			refDataArray.push_back(confArray[i]);
+		}
 	}
 
 	maxDataSize = calcRefArrDataSize();

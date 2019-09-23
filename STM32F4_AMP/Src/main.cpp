@@ -96,6 +96,15 @@ static void MX_SPI2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+int _write(int file, char *ptr, int len)
+{
+	for (int i = 0; i < len; i++)
+	{
+		ITM_SendChar(*ptr++);
+	}
+	return len;
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM6)
@@ -176,6 +185,9 @@ int main(void)
   HAL_I2C_Init(&hi2c1);
   imuSensors.initializeI2C_Sensors(&hi2c1);
 
+  dcMotors.stop_L();
+  dcMotors.stop_R();
+
   dataManagement.configure(&dataPtrMap);
   tcp_echoserver_init();
 
@@ -191,6 +203,7 @@ int main(void)
   while (1)
   {
 	  MX_LWIP_Process();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -428,7 +441,7 @@ static void MX_TIM8_Init(void)
 
   /* USER CODE END TIM8_Init 1 */
   htim8.Instance = TIM8;
-  htim8.Init.Prescaler = 17999;
+  htim8.Init.Prescaler = 179;
   htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim8.Init.Period = 999;
   htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

@@ -21,6 +21,9 @@
 #define RIGHT_PWM_COMMAND_H 3
 #define RIGHT_PWM_COMMAND_L 4
 
+#define MAX_VOLTAGE 6
+#define BATTERY_VOLTAGE 12
+
 #define MOTOR_OBJECTDATAVOLUME 5
 
 class DCMotor {

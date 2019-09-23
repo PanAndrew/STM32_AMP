@@ -7,6 +7,8 @@
 
 #include "DCMotor.h"
 
+#define ADJUST(value) (value * MAX_VOLTAGE / BATTERY_VOLTAGE)
+
 DCMotor::DCMotor(TIM_HandleTypeDef *timer) {
 	this->htim = timer;
 }
@@ -40,7 +42,8 @@ void DCMotor::forward_R(TIM_HandleTypeDef *htim, uint16_t pwmValue)
 	{
 		stop_R();
 	}
-	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, pwmValue);
+	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, ADJUST(pwmValue));
+	this->pwmValue[RIGHT_MOTOR] = pwmValue;
 	right(BRIDGE_A1_GPIO_Port, BRIDGE_A1_Pin, BRIDGE_A2_GPIO_Port, BRIDGE_A2_Pin);
 	motorStatus[RIGHT_MOTOR] = forwardRun;
 }
@@ -51,7 +54,8 @@ void DCMotor::forward_L(TIM_HandleTypeDef *htim, uint16_t pwmValue)
 	{
 		stop_L();
 	}
-	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_2, pwmValue);
+	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_2, ADJUST(pwmValue));
+	this->pwmValue[LEFT_MOTOR] = pwmValue;
 	left(BRIDGE_B1_GPIO_Port, BRIDGE_B1_Pin, BRIDGE_B2_GPIO_Port, BRIDGE_B2_Pin);
 	motorStatus[LEFT_MOTOR] = forwardRun;
 }
@@ -62,7 +66,8 @@ void DCMotor::back_R(TIM_HandleTypeDef *htim, uint16_t pwmValue)
 	{
 		stop_R();
 	}
-	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, pwmValue);
+	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, ADJUST(pwmValue));
+	this->pwmValue[RIGHT_MOTOR] = pwmValue;
 	left(BRIDGE_A1_GPIO_Port, BRIDGE_A1_Pin, BRIDGE_A2_GPIO_Port, BRIDGE_A2_Pin);
 	motorStatus[RIGHT_MOTOR] = backRun;
 }
@@ -73,7 +78,8 @@ void DCMotor::back_L(TIM_HandleTypeDef *htim, uint16_t pwmValue)
 	{
 		stop_L();
 	}
-	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_2, pwmValue);
+	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_2, ADJUST(pwmValue));
+	this->pwmValue[LEFT_MOTOR] = pwmValue;
 	right(BRIDGE_B1_GPIO_Port, BRIDGE_B1_Pin, BRIDGE_B2_GPIO_Port, BRIDGE_B2_Pin);
 	motorStatus[LEFT_MOTOR] = backRun;
 }
