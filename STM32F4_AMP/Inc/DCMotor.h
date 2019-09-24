@@ -22,7 +22,7 @@
 #define RIGHT_PWM_COMMAND_L 4
 
 #define MAX_VOLTAGE 6
-#define BATTERY_VOLTAGE 12
+#define BATTERY_VOLTAGE 6
 
 #define MOTOR_OBJECTDATAVOLUME 5
 
@@ -43,6 +43,7 @@ class DCMotor {
 	void left(GPIO_TypeDef *gpioBase_1, uint16_t gpioPin_1, GPIO_TypeDef *gpioBase_2, uint16_t gpioPin_2);
 	void right(GPIO_TypeDef *gpioBase_1, uint16_t gpioPin_1, GPIO_TypeDef *gpioBase_2, uint16_t gpioPin_2);
 	void makeManeuver(uint8_t motorID, uint8_t maneuver, uint16_t pwmData);
+	void setPWMOnTimer(TIM_HandleTypeDef *htim, uint8_t timChannel, uint16_t pwmValue);
 
 public:
 	DCMotor(TIM_HandleTypeDef *htim);

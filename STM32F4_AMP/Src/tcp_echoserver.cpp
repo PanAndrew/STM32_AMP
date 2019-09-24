@@ -164,22 +164,23 @@ static err_t tcp_echoserver_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
   return ret_err;  
 }
 
-void manageRecaivedData(struct tcp_echoserver_struct *es)
+void manageRecaivedData(struct tcp_echoserver_struct *es, struct pbuf *p)
 {
 	uint8_t *data = static_cast<uint8_t*>(es->p->payload);
 	uint16_t iter = 0;
-	uint16_t dataLengthRemain = es->p->len;
+	uint16_t dataLength = es->p->len;
+	uint16_t dataLengthRemain = dataLength;
 
-	while (dataLengthRemain - iter)
+	while (dataLengthRemain)
 	{
 		switch (data[iter])
 		{
 		case 0:
 			iter++;
-			if(dataLengthRemain - iter > 0)
+			if(dataLengthRemain > 0)
 			{
-				dataManagement.confRefArray(&data[iter], dataLengthRemain - iter);
-				iter += (dataLengthRemain - iter);
+				dataManagement.confRefArray(&data[iter], dataLengthRemain - 1);
+				iter += (dataLengthRemain - 1);
 			}
 			else
 			{
@@ -201,12 +202,16 @@ void manageRecaivedData(struct tcp_echoserver_struct *es)
 			}
 			break;
 		default:
-			pbuf_free (es->p);
+			es->p = NULL;
+			pbuf_free(p);
+			dataLengthRemain = 0;
+			continue;
 		}
-		dataLengthRemain -= iter;
+		dataLengthRemain = dataLength - iter;
 	}
 
-	pbuf_free (es->p);
+	es->p = NULL;
+	pbuf_free(p);
 }
 
 /**
@@ -266,7 +271,7 @@ static err_t tcp_echoserver_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
     /* store reference to incoming pbuf (chain) */
     es->p = p;
     
-    manageRecaivedData(es);
+    manageRecaivedData(es, p);
 
     /* initialize LwIP tcp_sent callback function */
 //    tcp_sent(tpcb, tcp_echoserver_sent);
@@ -283,7 +288,7 @@ static err_t tcp_echoserver_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
     {
       es->p = p;
   
-      manageRecaivedData(es);
+      manageRecaivedData(es, p);
 
       /* send back received data */
 //      tcp_echoserver_send(tpcb, es);

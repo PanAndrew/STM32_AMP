@@ -64,10 +64,6 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-u8_t  recev_buf[50];
-__IO uint32_t message_count=0;
-
-u8_t   data[100];
 
 struct tcp_pcb *echoclient_pcb = NULL;
 
@@ -140,15 +136,11 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
       es->state = ES_CONNECTED;
       es->pcb = tpcb;
       
-      //sprintf((char*)data, "sending tcp client message %d", (int)message_count);
-        
       /* allocate pbuf */
-      es->p_tx = pbuf_alloc(PBUF_TRANSPORT, strlen((char*)data) , PBUF_POOL);
+      es->p_tx = pbuf_alloc(PBUF_TRANSPORT, 1, PBUF_POOL);
          
       if (es->p_tx)
-      {       
-        /* copy data to pbuf */
-        //pbuf_take(es->p_tx, (char*)data, strlen((char*)data));
+      {
         
         /* pass newly allocated es structure as argument to tpcb */
         tcp_arg(tpcb, es);
@@ -161,9 +153,6 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
   
         /* initialize LwIP tcp_poll callback function */
         tcp_poll(tpcb, tcp_echoclient_poll, 1);
-    
-        /* send data */
-        //tcp_echoclient_send(tpcb,es);
         
         return ERR_OK;
       }
@@ -201,9 +190,6 @@ void sendDataWhileConnected(uint8_t * dataToSend, uint16_t dataLength)
 
 			return;
 		}
-
-		sprintf((char*)data, "new message, just new message, oh message and new message %d \n",
-				(int)message_count++);
 
 		es->p_tx = pbuf_alloc(PBUF_TRANSPORT, dataLength, PBUF_POOL);
 
