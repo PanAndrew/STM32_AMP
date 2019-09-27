@@ -441,7 +441,7 @@ static void MX_TIM8_Init(void)
 
   /* USER CODE END TIM8_Init 1 */
   htim8.Instance = TIM8;
-  htim8.Init.Prescaler = 179;
+  htim8.Init.Prescaler = 1799;
   htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim8.Init.Period = 999;
   htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -580,11 +580,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(BRIDGE_B2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ENCODER_L_Pin ENCODER_R_Pin */
-  GPIO_InitStruct.Pin = ENCODER_L_Pin|ENCODER_R_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  /*Configure GPIO pin : ENCODER_L_Pin */
+  GPIO_InitStruct.Pin = ENCODER_L_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_Init(ENCODER_L_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ENCODER_R_Pin */
+  GPIO_InitStruct.Pin = ENCODER_R_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(ENCODER_R_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : BLUE_LED_Pin */
   GPIO_InitStruct.Pin = BLUE_LED_Pin;
@@ -601,7 +607,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(SPI1_SS_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }

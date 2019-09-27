@@ -88,6 +88,13 @@ uint16_t DataManagement::getCollectedData(uint8_t* globalBuffer)
 		dataSize++;
 
 		returnedSize = dataPtrMap->at(indexID).getFunction()(&dataBuffer[++dataSize]);
+
+		if(!returnedSize)
+		{
+			dataSize -= 2;
+			continue;
+		}
+
 		dataBuffer[dataSize - 1] = returnedSize;
 
 		dataSize += returnedSize;
