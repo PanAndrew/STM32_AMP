@@ -167,7 +167,11 @@ void IMUSensor::configureGyro(I2C_HandleTypeDef *hi2c, uint8_t gyroRegAddr, uint
 
 void IMUSensor::configureMag(I2C_HandleTypeDef *hi2c, uint8_t magRegAddr, uint8_t regValue)
 {
+#ifdef XNucleo
+	writeI2C(hi2c, LIS2MDL_MAG_SENS_ADDR, &magRegAddr, &regValue);
+#else
 	writeI2C(hi2c, MAG_SENS_ADDR, &magRegAddr, &regValue);
+#endif
 }
 
 uint16_t IMUSensor::getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer)

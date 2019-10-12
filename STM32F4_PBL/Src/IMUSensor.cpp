@@ -19,10 +19,16 @@ IMUSensor::~IMUSensor() {
 
 void IMUSensor::initializeI2C_Sensors(I2C_HandleTypeDef *hi2c)
 {
-#ifdef XNucleo
+#ifdef XNucleoV3
 	configureAcc(hi2c, LSM6DSO_ACC_CTRL_REG1, LSM6DSO_ACC_CTRL_208HZ);
 	configureGyro(hi2c, LSM6DSO_GYRO_CTRL_REG_2, LSM6DSO_GYRO_208HZ);
 	configureMag(hi2c, LIS2MDL_MAG_CFG_REG_A, LIS2MDL_MAG_CFG_REG_50HZ_TEMP_COMP);
+#elif defined(XNucleoV1)
+	//Both Acc and Gyro are initialized while Gyro configuration
+	configureGyro(hi2c, LSM6DS0_GYRO_CTRL_REG_1, LSM6DS0_GYRO_238HZ);
+	configureMag(hi2c, LIS3MDL_MAG_CFG_REG_1, LIS3MDL_MAG_TEMP_SPEEDMODE);
+	configureMag(hi2c, LIS3MDL_MAG_CFG_REG_3, LIS3MDL_MAG_CONTINOUSMODE);
+	configureMag(hi2c, LIS3MDL_MAG_CFG_REG_4, LIS3MDL_MAG_Z_AXISMODE_ENDIANESS);
 #else
 	configureAcc(hi2c, ACC_CTRL_REG1, ACC_CTRL_REG1_200HZ);
 	configureAcc(hi2c, ACC_CTRL_REG4, ACC_CTRL_REG4_2G_HR);
@@ -33,7 +39,9 @@ void IMUSensor::initializeI2C_Sensors(I2C_HandleTypeDef *hi2c)
 
 void IMUSensor::initializeSPI_Sensors(SPI_HandleTypeDef *hspi)
 {
-#ifdef XNucleo
+#ifdef XNucleoV3
+
+#elif defined(XNucleoV1)
 
 #else
 	configureGyro(hspi, GYRO_CNT_REG_1, GYRO_TURN_ON);
@@ -89,7 +97,12 @@ void IMUSensor::pullMagData(I2C_HandleTypeDef *hi2c, uint8_t magDeviceAddr, uint
 {
 	HAL_I2C_Mem_Read(hi2c, magDeviceAddr, registerAddr, 1, rawData, size, 1);
 
-#ifdef XNucleo
+#ifdef XNucleoV3
+	for(uint8_t i = 0; i < 6; i+=2)
+	{
+		std::swap(rawData[i], rawData[i + 1]);
+	}
+#elif defined(XNucleoV1)
 	for(uint8_t i = 0; i < 6; i+=2)
 	{
 		std::swap(rawData[i], rawData[i + 1]);
@@ -106,10 +119,14 @@ void IMUSensor::pullDataFromSensorsI2C(I2C_HandleTypeDef *hi2c)
 {
 	if(!readingInProgress)
 	{
-	#ifdef XNucleo
+	#ifdef XNucleoV3
 		pullAccData(hi2c, LSM6DSO_ACC_SENS_ADDR, LSM6DSO_ACC_DATA, LSM6DSO_ACC_DATA_SIZE);
 		pullGyroData(hi2c, LSM6DSO_GYRO_SENS_ADDR, LSM6DSO_GYRO_DATA, LSM6DSO_GYRO_DATA_SIZE);
 		pullMagData(hi2c, LIS2MDL_MAG_SENS_ADDR, LIS2MDL_MAG_DATA, LIS2MDL_MAG_DATA_SIZE);
+	#elif defined(XNucleoV1)
+		pullAccData(hi2c, LSM6DS0_ACC_SENS_ADDR, LSM6DS0_ACC_DATA, LSM6DS0_ACC_DATA_SIZE);
+		pullGyroData(hi2c, LSM6DS0_GYRO_SENS_ADDR, LSM6DS0_GYRO_DATA, LSM6DS0_GYRO_DATA_SIZE);
+		pullMagData(hi2c, LIS3MDL_MAG_SENS_ADDR, LIS3MDL_MAG_DATA, LIS3MDL_MAG_DATA_SIZE);
 	#else
 		pullAccData(hi2c, ACC_SENS_ADDR, ACC_DATA | ACC_MULTIBYTE_READ,	ACC_DATA_SIZE);
 		pullMagData(hi2c, MAG_SENS_ADDR, MAG_DATA, MAG_DATA_SIZE);
@@ -121,7 +138,9 @@ void IMUSensor::pullDataFromSensorsSPI(SPI_HandleTypeDef *hspi)
 {
 	if(!readingInProgress)
 	{
-	#ifdef XNucleo
+	#ifdef XNucleoV3
+
+	#elif defined(XNucleoV1)
 
 	#else
 		pullGyroData(hspi, GYRO_DATA | GYRO_MULTICONT_READ, GYRO_DATA_SIZE);
@@ -144,8 +163,11 @@ void IMUSensor::writeI2C(I2C_HandleTypeDef *hi2c, uint8_t sensorAddr , uint8_t *
 
 void IMUSensor::configureAcc(I2C_HandleTypeDef *hi2c, uint8_t accRegAddr, uint8_t regValue)
 {
-#ifdef XNucleo
+#ifdef XNucleoV3
 	writeI2C(hi2c, LSM6DSO_ACC_SENS_ADDR, &accRegAddr, &regValue);
+
+#elif defined(XNucleoV1)
+	writeI2C(hi2c, LSM6DS0_ACC_SENS_ADDR, &accRegAddr, &regValue);
 #else
 	writeI2C(hi2c, ACC_SENS_ADDR, &accRegAddr, &regValue);
 #endif
@@ -158,8 +180,10 @@ void IMUSensor::configureGyro(SPI_HandleTypeDef *hspi, uint8_t gyroRegAddr, uint
 
 void IMUSensor::configureGyro(I2C_HandleTypeDef *hi2c, uint8_t gyroRegAddr, uint8_t regValue)
 {
-#ifdef XNucleo
-	writeI2C(hi2c, LIS2MDL_MAG_SENS_ADDR, &gyroRegAddr, &regValue);
+#ifdef XNucleoV3
+	writeI2C(hi2c, LSM6DSO_GYRO_SENS_ADDR, &gyroRegAddr, &regValue);
+#elif defined(XNucleoV1)
+	writeI2C(hi2c, LSM6DS0_GYRO_SENS_ADDR, &gyroRegAddr, &regValue);
 #else
 
 #endif
@@ -167,7 +191,13 @@ void IMUSensor::configureGyro(I2C_HandleTypeDef *hi2c, uint8_t gyroRegAddr, uint
 
 void IMUSensor::configureMag(I2C_HandleTypeDef *hi2c, uint8_t magRegAddr, uint8_t regValue)
 {
+#ifdef XNucleoV3
+	writeI2C(hi2c, LIS2MDL_MAG_SENS_ADDR, &magRegAddr, &regValue);
+#elif defined(XNucleoV1)
+	writeI2C(hi2c, LIS3MDL_MAG_SENS_ADDR, &magRegAddr, &regValue);
+#else
 	writeI2C(hi2c, MAG_SENS_ADDR, &magRegAddr, &regValue);
+#endif
 }
 
 uint16_t IMUSensor::getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer)
