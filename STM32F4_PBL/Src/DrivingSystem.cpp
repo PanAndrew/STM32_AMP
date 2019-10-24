@@ -28,8 +28,15 @@ void DrivingSystem::drivingService()
 {
 	if(checkTimeToDrive())
 	{
-		dcMotorDriver.stop();
-		servo.stop();
+		if(!commandsQueue.empty())
+		{
+			loadFrontCommand();
+		}
+		else
+		{
+			dcMotorDriver.stop();
+			servo.stop();
+		}
 	}
 
 	dcMotorDriver.drivingIteration();
@@ -41,6 +48,19 @@ void DrivingSystem::drivingService()
 	{
 		lastDrivingCmdTimeStamp = HAL_GetTick();
 	}
+}
+
+void DrivingSystem::loadFrontCommand()
+{
+	DrivingCommand driveCmd = commandsQueue.front();
+
+	dcMotorDriver.configureDesiredPWM(driveCmd.getMotorDirection(), driveCmd.getMotorDesiredPWM());
+	servo.configureDesiredPWM(driveCmd.getServoDirection(), driveCmd.getServoDesiredPWM());
+	timeToDrive = driveCmd.getTimeToDrive();
+
+	commandsQueue.pop_front();
+
+	lastDrivingCmdTimeStamp = HAL_GetTick();
 }
 
 bool DrivingSystem::checkTimeToDrive()
@@ -69,6 +89,8 @@ void DrivingSystem::configureDesiredPWM(uint8_t *dataBuffer)
 	uint8_t motorDirection;
 	uint16_t servoDesiredPWM;
 	uint16_t motorDesiredPWM;
+	uint16_t timeToDriveValue;
+	uint8_t queueCommandFlag;
 
 	servoDirection = dataBuffer[DIRECTION_COMMAND] >> 4;
 	servoDesiredPWM = dataBuffer[SERVO_PWM_COMMAND_H] << 8 | dataBuffer[SERVO_PWM_COMMAND_L];
@@ -76,12 +98,29 @@ void DrivingSystem::configureDesiredPWM(uint8_t *dataBuffer)
 	motorDirection = dataBuffer[DIRECTION_COMMAND] & 0xF;
 	motorDesiredPWM = dataBuffer[MOTOR_PWM_COMMAND_H] << 8 | dataBuffer[MOTOR_PWM_COMMAND_L];
 
-	timeToDrive = dataBuffer[TIME_TO_DRIVE_H] << 8 | dataBuffer[TIME_TO_DRIVE_L];
+	timeToDriveValue = dataBuffer[TIME_TO_DRIVE_H] << 8 | dataBuffer[TIME_TO_DRIVE_L];
+	queueCommandFlag = dataBuffer[QUEUE_COMMAND_FLAG];
 
-	dcMotorDriver.configureDesiredPWM(&motorDirection, &motorDesiredPWM);
-	servo.configureDesiredPWM(&servoDirection, &servoDesiredPWM);
+	if(queueCommandFlag)
+	{
+		if(commandsQueue.size() < MAX_QUEUE_SIZE)
+		{
+			DrivingCommand driveCmd = DrivingCommand(servoDirection, servoDesiredPWM,
+					motorDirection, motorDesiredPWM, timeToDriveValue);
 
-	lastDrivingCmdTimeStamp = HAL_GetTick();
+			commandsQueue.push_back(driveCmd);
+		}
+	}
+	else
+	{
+		commandsQueue.clear();
+
+		dcMotorDriver.configureDesiredPWM(&motorDirection, &motorDesiredPWM);
+		servo.configureDesiredPWM(&servoDirection, &servoDesiredPWM);
+		timeToDrive = timeToDriveValue;
+
+		lastDrivingCmdTimeStamp = HAL_GetTick();
+	}
 }
 
 uint8_t DrivingSystem::getDataInArray(uint8_t* dataBuffer)
@@ -102,6 +141,7 @@ uint8_t DrivingSystem::getDataInArray(uint8_t* dataBuffer)
 	calculateRemainedTTD();
 	dataToReturnMain[5] = remainedTTD >> 8;
 	dataToReturnMain[6] = remainedTTD & 0xFF;
+	dataToReturnMain[7] = commandsQueue.size();
 
 	std::copy_n(dataToReturnMain, DATASET_LENGTH, dataBuffer);
 

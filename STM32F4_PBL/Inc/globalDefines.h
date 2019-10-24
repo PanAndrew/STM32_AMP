@@ -16,9 +16,9 @@
 #define ID_ENCODER 0x07
 #define ID_GPS 0x08
 
-#define SIZE_SET_PWM 7
+#define SIZE_SET_PWM 8
 
-#define SIZE_GET_PWM 7
+#define SIZE_GET_PWM 8
 #define SIZE_GET_TIM 16
 #define SIZE_GET_ACC 10
 #define SIZE_GET_GYRO 10

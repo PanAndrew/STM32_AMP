@@ -10,11 +10,12 @@
 
 #include "DCMotorDriver.h"
 #include "Servo.h"
+#include "DrivingCommand.h"
 
 #define NUMBER_OF_DC_MOTORS 1
 #define NUMBER_OF_SERVOS 1
 
-#define DATASET_LENGTH 7
+#define DATASET_LENGTH 8
 
 class DrivingSystem {
 
@@ -25,8 +26,11 @@ class DrivingSystem {
 	uint32_t lastDrivingCmdTimeStamp;
 	uint32_t remainedTTD;
 
+	std::list<DrivingCommand> commandsQueue;
+
 	void calculateRemainedTTD();
 	bool checkTimeToDrive();
+	void loadFrontCommand();
 
 public:
 	DrivingSystem(TIM_HandleTypeDef *htimDC, uint8_t timChannelDC, TIM_HandleTypeDef *htimServo, uint8_t timChannelServo);
