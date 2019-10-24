@@ -10,8 +10,8 @@
 
 #include "DataBuffer.h"
 #include "IMUData.h"
-//#include "xNucleoShieldSensorsV3.h"
-#include "xNucleoShieldSensorsV1.h"
+#include "xNucleoShieldSensorsV3.h"
+//#include "xNucleoShieldSensorsV1.h"
 #include "main.h"
 
 #define GYRO_CNT_REG_1 0x20

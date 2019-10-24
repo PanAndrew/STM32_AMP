@@ -22,8 +22,13 @@ class Servo {
 		rightRun
 	};
 
+	uint8_t idleStateValue = 0;
+	uint16_t idlePWMValue = 0;
+
 	uint16_t pwmValue;
-	status servoStatus;
+	uint16_t pwmDesiredValue;
+	status servoPresentStatus;
+	status servoDesiredStatus;
 	TIM_HandleTypeDef *htim;
 	uint8_t timChannel;
 
@@ -40,6 +45,8 @@ public:
 	void initialize(TIM_HandleTypeDef *htim, uint8_t timChannel);
 
 	void idle();
+	void stop();
+	void steeringIteration();
 
 	void configureDesiredPWM(uint8_t *direction, uint16_t *desiredPWM);
 	uint8_t getDataInArray(uint8_t* dataBuffer);

@@ -28,8 +28,18 @@ void DrivingSystem::drivingService()
 {
 	if(checkTimeToDrive())
 	{
-		dcMotorDriver.idle();
-		servo.idle();
+		dcMotorDriver.stop();
+		servo.stop();
+	}
+
+	dcMotorDriver.drivingIteration();
+	if(dcMotorDriver.isShiftingQueueEmpty())
+	{
+		servo.steeringIteration();
+	}
+	else
+	{
+		lastDrivingCmdTimeStamp = HAL_GetTick();
 	}
 }
 
@@ -55,26 +65,21 @@ void DrivingSystem::calculateRemainedTTD()
 
 void DrivingSystem::configureDesiredPWM(uint8_t *dataBuffer)
 {
-	uint8_t direction;
-	uint16_t desiredPWM;
+	uint8_t servoDirection;
+	uint8_t motorDirection;
+	uint16_t servoDesiredPWM;
+	uint16_t motorDesiredPWM;
 
-	for(uint8_t i = 0; i < NUMBER_OF_DC_MOTORS; i++)
-	{
-		direction = dataBuffer[DATASET_LENGTH * i + DIRECTION_COMMAND] & 0xF;
-		desiredPWM = dataBuffer[DATASET_LENGTH * i + MOTOR_PWM_COMMAND_H] << 8 |
-				dataBuffer[DATASET_LENGTH * i + MOTOR_PWM_COMMAND_L];
-		timeToDrive = dataBuffer[DATASET_LENGTH * i + TIME_TO_DRIVE_H] << 8 |
-				dataBuffer[DATASET_LENGTH * i + TIME_TO_DRIVE_L];
-		dcMotorDriver.configureDesiredPWM(&direction, &desiredPWM);
-	}
+	servoDirection = dataBuffer[DIRECTION_COMMAND] >> 4;
+	servoDesiredPWM = dataBuffer[SERVO_PWM_COMMAND_H] << 8 | dataBuffer[SERVO_PWM_COMMAND_L];
 
-	for(uint8_t i = 0; i < NUMBER_OF_SERVOS; i++)
-	{
-		direction = dataBuffer[DATASET_LENGTH * i + DIRECTION_COMMAND] >> 4;
-		desiredPWM = dataBuffer[DATASET_LENGTH * i + SERVO_PWM_COMMAND_H] << 8 |
-				dataBuffer[DATASET_LENGTH * i + SERVO_PWM_COMMAND_L];
-		servo.configureDesiredPWM(&direction, &desiredPWM);
-	}
+	motorDirection = dataBuffer[DIRECTION_COMMAND] & 0xF;
+	motorDesiredPWM = dataBuffer[MOTOR_PWM_COMMAND_H] << 8 | dataBuffer[MOTOR_PWM_COMMAND_L];
+
+	timeToDrive = dataBuffer[TIME_TO_DRIVE_H] << 8 | dataBuffer[TIME_TO_DRIVE_L];
+
+	dcMotorDriver.configureDesiredPWM(&motorDirection, &motorDesiredPWM);
+	servo.configureDesiredPWM(&servoDirection, &servoDesiredPWM);
 
 	lastDrivingCmdTimeStamp = HAL_GetTick();
 }
@@ -89,10 +94,10 @@ uint8_t DrivingSystem::getDataInArray(uint8_t* dataBuffer)
 	dcMotorDriver.getDataInArray(dataToReturnDC);
 
 	dataToReturnMain[0] = dataToReturnServo[DIRECTION_COMMAND] << 4 | dataToReturnDC[DIRECTION_COMMAND];
-	dataToReturnMain[1] = dataToReturnServo[SERVO_PWM_COMMAND_H];
-	dataToReturnMain[2] = dataToReturnServo[SERVO_PWM_COMMAND_L];
-	dataToReturnMain[3] = dataToReturnDC[MOTOR_PWM_COMMAND_H];
-	dataToReturnMain[4] = dataToReturnDC[MOTOR_PWM_COMMAND_L];
+	dataToReturnMain[1] = dataToReturnServo[PWM_COMMAND_H];
+	dataToReturnMain[2] = dataToReturnServo[PWM_COMMAND_L];
+	dataToReturnMain[3] = dataToReturnDC[PWM_COMMAND_H];
+	dataToReturnMain[4] = dataToReturnDC[PWM_COMMAND_L];
 
 	calculateRemainedTTD();
 	dataToReturnMain[5] = remainedTTD >> 8;

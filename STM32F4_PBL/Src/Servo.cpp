@@ -33,13 +33,13 @@ void Servo::initialize(TIM_HandleTypeDef *htim, uint8_t timChannel)
 void Servo::idle()
 {
 	setPWMOnTimer(IDLE_VALUE);
-	this->pwmValue = IDLE_VALUE;
-	servoStatus = idle_stat;
+	this->pwmValue = 0;
+	servoPresentStatus = idle_stat;
 }
 
 void Servo::left(uint16_t pwmValue)
 {
-	if(servoStatus == rightRun)
+	if(servoPresentStatus == rightRun)
 	{
 		idle();
 	}
@@ -51,12 +51,12 @@ void Servo::left(uint16_t pwmValue)
 
 	setPWMOnTimer(LEFT(pwmValue));
 	this->pwmValue = pwmValue;
-	servoStatus = leftRun;
+	servoPresentStatus = leftRun;
 }
 
 void Servo::right(uint16_t pwmValue)
 {
-	if (servoStatus == leftRun)
+	if (servoPresentStatus == leftRun)
 	{
 		idle();
 	}
@@ -68,7 +68,17 @@ void Servo::right(uint16_t pwmValue)
 
 	setPWMOnTimer(RIGHT(pwmValue));
 	this->pwmValue = pwmValue;
-	servoStatus = rightRun;
+	servoPresentStatus = rightRun;
+}
+
+void Servo::stop()
+{
+	configureDesiredPWM(&idleStateValue, &idlePWMValue);
+}
+
+void Servo::steeringIteration()
+{
+	makeManeuver(servoDesiredStatus, pwmDesiredValue);
 }
 
 void Servo::makeManeuver(uint8_t direction, uint16_t pwmData)
@@ -94,14 +104,15 @@ void Servo::makeManeuver(uint8_t direction, uint16_t pwmData)
 
 void Servo::configureDesiredPWM(uint8_t *direction, uint16_t *desiredPWM)
 {
-	makeManeuver(*direction, *desiredPWM);
+	pwmDesiredValue = *desiredPWM;
+	servoDesiredStatus = (status)*direction;
 }
 
 uint8_t Servo::getDataInArray(uint8_t *dataBuffer)
 {
 	uint8_t dataToReturn[SERVO_OBJECTDATAVOLUME];
 
-	dataToReturn[0] = servoStatus;
+	dataToReturn[0] = servoPresentStatus;
 	dataToReturn[1] = pwmValue >> 8;
 	dataToReturn[2] = pwmValue & 0xFF;
 

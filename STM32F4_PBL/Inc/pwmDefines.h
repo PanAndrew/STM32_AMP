@@ -12,6 +12,9 @@
 #define MAX_DIR_PWM 500
 #define BRAKE_PWM 200
 
+#define BREAKING_TIME_MS 200
+#define IDLING_TIME_MS 50
+
 #define DIRECTION_COMMAND 0
 #define PWM_COMMAND_H 1
 #define PWM_COMMAND_L 2
