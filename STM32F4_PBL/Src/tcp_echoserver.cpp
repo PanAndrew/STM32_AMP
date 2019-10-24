@@ -190,10 +190,10 @@ void manageRecaivedData(struct tcp_echoserver_struct *es, struct pbuf *p)
 			break;
 		case ID_PWM << 1:
 			iter++;
-			if(dataLengthRemain > SIZE_GET_PWM)
+			if(dataLengthRemain > SIZE_SET_PWM)
 			{
 				drivingSystem.configureDesiredPWM(&data[iter]);
-				iter += SIZE_GET_PWM;
+				iter += SIZE_SET_PWM;
 			}
 			else
 			{

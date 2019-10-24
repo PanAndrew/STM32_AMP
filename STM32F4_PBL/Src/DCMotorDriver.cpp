@@ -34,6 +34,7 @@ void DCMotorDriver::idle()
 	if(motorStatus == forwardRun)
 	{
 		braking();
+		HAL_Delay(500);
 	}
 
 	setPWMOnTimer(IDLE_VALUE);
