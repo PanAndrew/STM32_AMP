@@ -59,7 +59,7 @@
 #define DEST_IP_ADDR2   (uint8_t) 1
 #define DEST_IP_ADDR3   (uint8_t) 120
 
-#define DEST_PORT       (uint16_t) 1111
+#define DEST_PORT       (uint16_t) 1112
 
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -324,6 +324,11 @@ static void tcp_echoclient_send(struct tcp_pcb *tpcb, struct echoclient * es)
    {
      /* other problem ?? */
    }
+  }
+
+  if(wr_err == ERR_OK)
+  {
+	  tcp_output(tpcb);
   }
 }
 
