@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    LwIP/LwIP_TCP_Echo_Client/Inc/tcp_echoclient.h
+  * @file    LwIP/LwIP_UDP_Client/Inc/udp_client.h
   * @author  MCD Application Team
-  * @brief   Header file for tcp_echoclient.c
+  * @brief   Header file for udp_echoclient.c
   ******************************************************************************
   * @attention
   *
@@ -41,19 +41,20 @@
   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */  
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __TCP_ECHOCLIENT_H__
-#define __TCP_ECHOCLIENT_H__
+  */
+/* Define to prevent recursive inclusion -------------------------------------*/  
+#ifndef __UDP_CLIENT_H__
+#define __UDP_CLIENT_H__
 
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void tcp_echoclient_connect(void);
-void sendDataWhileConnected(uint8_t* dataToSend, uint16_t dataLength);
+void udp_client_connect(void);
+void udp_client_send(uint8_t* dataToSend, uint16_t dataLength);
 
-#endif /* __TCP_ECHOCLIENT_H__ */
+#endif /* __UDP_CLIENT_H__ */
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

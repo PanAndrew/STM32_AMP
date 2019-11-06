@@ -32,6 +32,7 @@
 #include "DataManagement.h"
 #include "tcp_server.h"
 #include "tcp_client.h"
+#include "udp_client.h"
 
 /* USER CODE END Includes */
 
@@ -44,6 +45,7 @@
 /* USER CODE BEGIN PD */
 
 #include "globalDefines.h"
+#define UDP_CLIENT
 
 /* USER CODE END PD */
 
@@ -128,7 +130,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 		dataLength = dataManagement.getCollectedData(dataBuffer.get());
 
+#ifdef UDP_CLIENT
+		udp_client_send(dataBuffer.get(), dataLength);
+#else
 		sendDataWhileConnected(dataBuffer.get(), dataLength);
+#endif
 	}
 
 	if (htim->Instance == TIM10)
@@ -204,6 +210,10 @@ int main(void)
 
   dataManagement.configure(&dataPtrMap);
   tcp_server_init();
+
+#ifdef UDP_CLIENT
+  udp_client_connect();
+#endif
 
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim7);

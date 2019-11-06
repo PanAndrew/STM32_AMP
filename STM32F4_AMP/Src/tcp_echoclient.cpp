@@ -48,11 +48,10 @@
 #include "lwip/stats.h"
 #include "lwip/tcp.h"
 #include "lwip/memp.h"
-#include <stdio.h>
-#include <string.h>
 
 #if LWIP_TCP
 /* Private typedef -----------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
 
 #define DEST_IP_ADDR0   (uint8_t) 192
 #define DEST_IP_ADDR1   (uint8_t) 168
@@ -61,7 +60,6 @@
 
 #define DEST_PORT       (uint16_t) 1111
 
-/* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
@@ -174,7 +172,7 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
   return err;
 }
 
-void sendDataWhileConnected(uint8_t * dataToSend, uint16_t dataLength)
+void sendDataWhileConnected(uint8_t* dataToSend, uint16_t dataLength)
 {
 	if(echoclient_pcb != NULL)
 	{

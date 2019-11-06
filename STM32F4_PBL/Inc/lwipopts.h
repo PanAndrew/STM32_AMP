@@ -54,29 +54,31 @@
 /*----- Value in opt.h for MEM_ALIGNMENT: 1 -----*/
 #define MEM_ALIGNMENT 4
 /*----- Default Value for MEM_SIZE: 1600 ---*/
-#define MEM_SIZE 24000
+#define MEM_SIZE 48512
+/*----- Default Value for MEMP_OVERFLOW_CHECK: 0 ---*/
+#define MEMP_OVERFLOW_CHECK 2
+/*----- Default Value for MEMP_SANITY_CHECK: 0 ---*/
+#define MEMP_SANITY_CHECK 1
 /*----- Default Value for MEMP_NUM_PBUF: 16 ---*/
 #define MEMP_NUM_PBUF 32
 /*----- Default Value for MEMP_NUM_TCP_SEG: 16 ---*/
 #define MEMP_NUM_TCP_SEG 32
 /*----- Default Value for PBUF_POOL_SIZE: 16 ---*/
 #define PBUF_POOL_SIZE 32
-/*----- Default Value for PBUF_POOL_BUFSIZE: 592 ---*/
-#define PBUF_POOL_BUFSIZE 1516
 /*----- Value in opt.h for LWIP_ETHERNET: LWIP_ARP || PPPOE_SUPPORT -*/
 #define LWIP_ETHERNET 1
 /*----- Default Value for LWIP_BROADCAST_PING: 0 ---*/
 #define LWIP_BROADCAST_PING 1
-/*----- Default Value for LWIP_RAW: 0 ---*/
-#define LWIP_RAW 1
 /*----- Value in opt.h for LWIP_DNS_SECURE: (LWIP_DNS_SECURE_RAND_XID | LWIP_DNS_SECURE_NO_MULTIPLE_OUTSTANDING | LWIP_DNS_SECURE_RAND_SRC_PORT) -*/
 #define LWIP_DNS_SECURE 7
 /*----- Default Value for TCP_MSS: 536 ---*/
 #define TCP_MSS 1460
-/*----- Default Value for TCP_SND_BUF: 2920 ---*/
-#define TCP_SND_BUF 5840
-/*----- Default Value for LWIP_TCP_TIMESTAMPS: 0 ---*/
-#define LWIP_TCP_TIMESTAMPS 1
+/*----- Value in opt.h for TCP_SND_QUEUELEN: (4*TCP_SND_BUF + (TCP_MSS - 1))/TCP_MSS -----*/
+#define TCP_SND_QUEUELEN 9
+/*----- Value in opt.h for TCP_SNDQUEUELOWAT: LWIP_MAX(TCP_SND_QUEUELEN)/2, 5) -*/
+#define TCP_SNDQUEUELOWAT 5
+/*----- Default Value for LWIP_NETIF_STATUS_CALLBACK: 0 ---*/
+#define LWIP_NETIF_STATUS_CALLBACK 1
 /*----- Default Value for LWIP_NETIF_LINK_CALLBACK: 0 ---*/
 #define LWIP_NETIF_LINK_CALLBACK 1
 /*----- Value in opt.h for LWIP_NETCONN: 1 -----*/
@@ -107,8 +109,6 @@
 #define CHECKSUM_CHECK_ICMP 0
 /*----- Value in opt.h for CHECKSUM_CHECK_ICMP6: 1 -----*/
 #define CHECKSUM_CHECK_ICMP6 0
-/*----- Default Value for LWIP_CHECKSUM_ON_COPY: 0 ---*/
-#define LWIP_CHECKSUM_ON_COPY 1
 /*-----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
 
