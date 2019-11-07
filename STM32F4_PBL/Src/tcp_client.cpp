@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    LwIP/LwIP_TCP_Echo_Client/Src/tcp_echoclient.c
+  * @file    LwIP/LwIP_TCP_Client/Src/tcp_client.c
   * @author  MCD Application Team
-  * @brief   tcp echoclient application using LwIP RAW API
+  * @brief   tcp tcp_client_struct application using LwIP RAW API
   ******************************************************************************
   * @attention
   *
@@ -65,10 +65,10 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-struct tcp_pcb *echoclient_pcb = NULL;
+struct tcp_pcb *tcp_client_pcb = NULL;
 
-/* ECHO protocol states */
-enum echoclient_states
+/* Protocol states */
+enum tcp_client_states
 {
   ES_NOT_CONNECTED = 0,
   ES_CONNECTED,
@@ -77,42 +77,42 @@ enum echoclient_states
 };
 
 /* structure to be passed as argument to the tcp callbacks */
-struct echoclient
+struct tcp_client_struct
 {
-  enum echoclient_states state; /* connection status */
+  enum tcp_client_states state; /* connection status */
   struct tcp_pcb *pcb;          /* pointer on the current tcp_pcb */
   struct pbuf *p_tx;            /* pointer on pbuf to be transmitted */
 };
 
 /* Private function prototypes -----------------------------------------------*/
-static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
-static void tcp_echoclient_connection_close(struct tcp_pcb *tpcb, struct echoclient * es);
-static err_t tcp_echoclient_poll(void *arg, struct tcp_pcb *tpcb);
-static err_t tcp_echoclient_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
-static void tcp_echoclient_send(struct tcp_pcb *tpcb, struct echoclient * es);
-static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err);
+static err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
+static void tcp_client_connection_close(struct tcp_pcb *tpcb, struct tcp_client_struct * es);
+static err_t tcp_client_poll(void *arg, struct tcp_pcb *tpcb);
+static err_t tcp_client_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
+static void tcp_client_send(struct tcp_pcb *tpcb, struct tcp_client_struct * es);
+static err_t tcp_client_connected(void *arg, struct tcp_pcb *tpcb, err_t err);
 
 /* Private functions ---------------------------------------------------------*/
 
 
 /**
-  * @brief  Connects to the TCP echo server
+  * @brief  Connects to the TCP server
   * @param  None
   * @retval None
   */
-void tcp_echoclient_connect(void)
+void tcp_client_connect(void)
 {
   ip_addr_t DestIPaddr;
 
   /* create new tcp pcb */
-  echoclient_pcb = tcp_new();
+  tcp_client_pcb = tcp_new();
   
-  if (echoclient_pcb != NULL)
+  if (tcp_client_pcb != NULL)
   {
     IP4_ADDR( &DestIPaddr, DEST_IP_ADDR0, DEST_IP_ADDR1, DEST_IP_ADDR2, DEST_IP_ADDR3 );
     
     /* connect to destination address/port */
-    tcp_connect(echoclient_pcb,&DestIPaddr,DEST_PORT,tcp_echoclient_connected);
+    tcp_connect(tcp_client_pcb,&DestIPaddr,DEST_PORT,tcp_client_connected);
   }
 }
 
@@ -122,14 +122,14 @@ void tcp_echoclient_connect(void)
   * @param err: when connection correctly established err should be ERR_OK 
   * @retval err_t: returned error 
   */
-static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err)
+static err_t tcp_client_connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 {
-  struct echoclient *es = NULL;
+  struct tcp_client_struct *es = NULL;
   
   if (err == ERR_OK)   
   {
     /* allocate structure es to maintain tcp connection informations */
-    es = (struct echoclient *)mem_malloc(sizeof(struct echoclient));
+    es = (struct tcp_client_struct *)mem_malloc(sizeof(struct tcp_client_struct));
   
     if (es != NULL)
     {
@@ -146,13 +146,13 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
         tcp_arg(tpcb, es);
   
         /* initialize LwIP tcp_recv callback function */ 
-        tcp_recv(tpcb, tcp_echoclient_recv);
+        tcp_recv(tpcb, tcp_client_recv);
   
         /* initialize LwIP tcp_sent callback function */
-        tcp_sent(tpcb, tcp_echoclient_sent);
+        tcp_sent(tpcb, tcp_client_sent);
   
         /* initialize LwIP tcp_poll callback function */
-        tcp_poll(tpcb, tcp_echoclient_poll, 1);
+        tcp_poll(tpcb, tcp_client_poll, 1);
         
         return ERR_OK;
       }
@@ -160,7 +160,7 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
     else
     {
       /* close connection */
-      tcp_echoclient_connection_close(tpcb, es);
+      tcp_client_connection_close(tpcb, es);
       
       /* return memory allocation error */
       return ERR_MEM;  
@@ -169,23 +169,23 @@ static err_t tcp_echoclient_connected(void *arg, struct tcp_pcb *tpcb, err_t err
   else
   {
     /* close connection */
-    tcp_echoclient_connection_close(tpcb, es);
+    tcp_client_connection_close(tpcb, es);
   }
   return err;
 }
 
 void sendDataWhileConnected(uint8_t * dataToSend, uint16_t dataLength)
 {
-	if(echoclient_pcb != NULL)
+	if(tcp_client_pcb != NULL)
 	{
-		struct echoclient *es;
-		es = (struct echoclient *)echoclient_pcb->callback_arg;
+		struct tcp_client_struct *es;
+		es = (struct tcp_client_struct *)tcp_client_pcb->callback_arg;
 
-		if(echoclient_pcb->state != ESTABLISHED)
+		if(tcp_client_pcb->state != ESTABLISHED)
 		{
-			if(echoclient_pcb->state == CLOSED)
+			if(tcp_client_pcb->state == CLOSED)
 			{
-				tcp_echoclient_connect();
+				tcp_client_connect();
 			}
 
 			return;
@@ -196,7 +196,7 @@ void sendDataWhileConnected(uint8_t * dataToSend, uint16_t dataLength)
 		if(es->p_tx)
 		{
 			pbuf_take(es->p_tx, dataToSend, dataLength);
-			tcp_echoclient_send(echoclient_pcb,es);
+			tcp_client_send(tcp_client_pcb,es);
 		}
 		else
 		{
@@ -205,7 +205,7 @@ void sendDataWhileConnected(uint8_t * dataToSend, uint16_t dataLength)
 	}
 	else
 	{
-		tcp_echoclient_connect();
+		tcp_client_connect();
 	}
 }
     
@@ -216,14 +216,14 @@ void sendDataWhileConnected(uint8_t * dataToSend, uint16_t dataLength)
   * @param err: receive error code 
   * @retval err_t: retuned error  
   */
-static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
+static err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 { 
-  struct echoclient *es;
+  struct tcp_client_struct *es;
   err_t ret_err; 
 
   LWIP_ASSERT("arg != NULL",arg != NULL);
   
-  es = (struct echoclient *)arg;
+  es = (struct tcp_client_struct *)arg;
   
   /* if we receive an empty tcp frame from server => close connection */
   if (p == NULL)
@@ -233,16 +233,16 @@ static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
     if(es->p_tx == NULL)
     {
        /* we're done sending, close connection */
-       tcp_echoclient_connection_close(tpcb, es);
+       tcp_client_connection_close(tpcb, es);
     }
     else
     {    
       /* send remaining data*/
-      tcp_echoclient_send(tpcb, es);
+      tcp_client_send(tpcb, es);
     }
     ret_err = ERR_OK;
   }   
-  /* else : a non empty frame was received from echo server but for some reason err != ERR_OK */
+  /* else : a non empty frame was received from server but for some reason err != ERR_OK */
   else if(err != ERR_OK)
   {
     /* free received pbuf*/
@@ -261,7 +261,7 @@ static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
     tcp_recved(tpcb, p->tot_len);  
     
     pbuf_free(p);
-    //tcp_echoclient_connection_close(tpcb, es);
+    //tcp_client_connection_close(tpcb, es);
     ret_err = ERR_OK;
   }
 
@@ -281,11 +281,11 @@ static err_t tcp_echoclient_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
 /**
   * @brief function used to send data
   * @param  tpcb: tcp control block
-  * @param  es: pointer on structure of type echoclient containing info on data 
+  * @param  es: pointer on structure of type tcp_client_struct containing info on data
   *             to be sent
   * @retval None 
   */
-static void tcp_echoclient_send(struct tcp_pcb *tpcb, struct echoclient * es)
+static void tcp_client_send(struct tcp_pcb *tpcb, struct tcp_client_struct * es)
 {
   struct pbuf *ptr;
   err_t wr_err = ERR_OK;
@@ -338,18 +338,18 @@ static void tcp_echoclient_send(struct tcp_pcb *tpcb, struct echoclient * es)
   * @param  tpcb: tcp connection control block
   * @retval err_t: error code
   */
-static err_t tcp_echoclient_poll(void *arg, struct tcp_pcb *tpcb)
+static err_t tcp_client_poll(void *arg, struct tcp_pcb *tpcb)
 {
   err_t ret_err;
-  struct echoclient *es;
+  struct tcp_client_struct *es;
 
-  es = (struct echoclient*)arg;
+  es = (struct tcp_client_struct*)arg;
   if (es != NULL)
   {
     if (es->p_tx != NULL)
     {
       /* there is a remaining pbuf (chain) , try to send data */
-      tcp_echoclient_send(tpcb, es);
+      tcp_client_send(tpcb, es);
     }
     else
     {
@@ -357,7 +357,7 @@ static err_t tcp_echoclient_poll(void *arg, struct tcp_pcb *tpcb)
       if(tpcb->state != ESTABLISHED)
       {
         /* close tcp connection */
-        tcp_echoclient_connection_close(tpcb, es);
+        tcp_client_connection_close(tpcb, es);
       }
     }
     ret_err = ERR_OK;
@@ -379,18 +379,18 @@ static err_t tcp_echoclient_poll(void *arg, struct tcp_pcb *tpcb)
   * @param  len: length of data sent 
   * @retval err_t: returned error code
   */
-static err_t tcp_echoclient_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
+static err_t tcp_client_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
 {
-  struct echoclient *es;
+  struct tcp_client_struct *es;
 
   LWIP_UNUSED_ARG(len);
 
-  es = (struct echoclient *)arg;
+  es = (struct tcp_client_struct *)arg;
   
   if(es->p_tx != NULL)
   {
     /* still got pbufs to send */
-    tcp_echoclient_send(tpcb, es);
+    tcp_client_send(tpcb, es);
   }
 
   return ERR_OK;
@@ -399,10 +399,10 @@ static err_t tcp_echoclient_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
 /**
   * @brief This function is used to close the tcp connection with server
   * @param tpcb: tcp connection control block
-  * @param es: pointer on echoclient structure
+  * @param es: pointer on tcp_client_struct structure
   * @retval None
   */
-static void tcp_echoclient_connection_close(struct tcp_pcb *tpcb, struct echoclient * es )
+static void tcp_client_connection_close(struct tcp_pcb *tpcb, struct tcp_client_struct * es )
 {
   /* remove callbacks */
   tcp_recv(tpcb, NULL);

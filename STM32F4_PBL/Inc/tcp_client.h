@@ -51,7 +51,7 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void tcp_echoclient_connect(void);
+void tcp_client_connect(void);
 void sendDataWhileConnected(uint8_t * dataToSend, uint16_t dataLength);
 
 #endif /* __TCP_ECHOCLIENT_H__ */

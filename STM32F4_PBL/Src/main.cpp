@@ -30,8 +30,8 @@
 #include "IMUSensor.h"
 #include "DataPtrVolumePair.h"
 #include "DataManagement.h"
-#include "tcp_echoserver.h"
-#include "tcp_echoclient.h"
+#include "tcp_server.h"
+#include "tcp_client.h"
 
 /* USER CODE END Includes */
 
@@ -203,7 +203,7 @@ int main(void)
   drivingSystem.initialize();
 
   dataManagement.configure(&dataPtrMap);
-  tcp_echoserver_init();
+  tcp_server_init();
 
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim7);
