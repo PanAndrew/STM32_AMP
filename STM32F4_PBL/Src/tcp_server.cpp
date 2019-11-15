@@ -41,6 +41,7 @@
 #include "DataManagement.h"
 #include "DrivingSystem.h"
 #include "globalDefines.h"
+#include "TimerConfigurator.h"
 
 #if LWIP_TCP
 
@@ -50,6 +51,7 @@ static struct tcp_pcb *tcp_server_pcb;
 extern DrivingSystem drivingSystem;
 //extern IMUSensor imuSensors(IMU_NUM_OF_ELEM);
 extern DataManagement dataManagement;
+extern TimerConfigurator timerConfig;
 
 /* Protocol states */
 enum tcp_server_states
@@ -177,7 +179,7 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 		{
 		case 0:
 			iter++;
-			if(dataLengthRemain > 0)
+			if (dataLengthRemain > 0)
 			{
 				dataManagement.confRefArray(&data[iter], dataLengthRemain - 1);
 				iter += (dataLengthRemain - 1);
@@ -188,9 +190,10 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 				continue;
 			}
 			break;
+
 		case ID_PWM << 1:
 			iter++;
-			if(dataLengthRemain > SIZE_SET_PWM)
+			if (dataLengthRemain > SIZE_SET_PWM)
 			{
 				drivingSystem.configureDesiredPWM(&data[iter]);
 				iter += SIZE_SET_PWM;
@@ -201,9 +204,22 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 				continue;
 			}
 			break;
+
+		case ID_TIM << 1:
+			iter++;
+			if (dataLengthRemain > SIZE_SET_TIM)
+			{
+				timerConfig.configureTimer(&data[iter]);
+				iter += SIZE_SET_TIM;
+			}
+			else
+			{
+				dataLengthRemain = 0;
+				continue;
+			}
+			break;
+
 		default:
-			es->p = NULL;
-			pbuf_free(p);
 			dataLengthRemain = 0;
 			continue;
 		}

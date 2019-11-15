@@ -55,8 +55,6 @@
 #define MEM_ALIGNMENT 4
 /*----- Default Value for MEM_SIZE: 1600 ---*/
 #define MEM_SIZE 48512
-/*----- Default Value for MEMP_OVERFLOW_CHECK: 0 ---*/
-#define MEMP_OVERFLOW_CHECK 2
 /*----- Default Value for MEMP_SANITY_CHECK: 0 ---*/
 #define MEMP_SANITY_CHECK 1
 /*----- Default Value for MEMP_NUM_PBUF: 16 ---*/

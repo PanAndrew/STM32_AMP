@@ -206,6 +206,7 @@ uint16_t IMUSensor::getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *d
 	uint8_t numberOfElements = buffer.size();
 	if(!numberOfElements)
 	{
+		readingInProgress = 0;
 		return 0;
 	}
 	IMUData tempData = buffer.get();

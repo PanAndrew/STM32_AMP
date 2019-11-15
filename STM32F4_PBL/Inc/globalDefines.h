@@ -17,6 +17,7 @@
 #define ID_GPS 0x08
 
 #define SIZE_SET_PWM 8
+#define SIZE_SET_TIM 6
 
 #define SIZE_GET_PWM 8
 #define SIZE_GET_TIM 16

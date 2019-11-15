@@ -33,6 +33,7 @@
 #include "tcp_server.h"
 #include "tcp_client.h"
 #include "udp_client.h"
+#include "TimerConfigurator.h"
 
 /* USER CODE END Includes */
 
@@ -72,6 +73,7 @@ Encoder encoder;
 DrivingSystem drivingSystem(&htim8, TIM_CHANNEL_1, &htim8, TIM_CHANNEL_2);
 IMUSensor imuSensors(IMU_NUM_OF_ELEM);
 DataManagement dataManagement;
+TimerConfigurator timerConfig(&htim6, &htim9, &htim7);
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
