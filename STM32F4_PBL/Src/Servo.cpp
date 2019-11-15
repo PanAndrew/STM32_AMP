@@ -7,8 +7,13 @@
 
 #include "Servo.h"
 
-#define LEFT(value) (IDLE_VALUE - value)
-#define RIGHT(value) (IDLE_VALUE + value)
+#ifdef UGV_4X4
+	#define LEFT(value) (IDLE_VALUE + value)
+	#define RIGHT(value) (IDLE_VALUE - value)
+#else
+	#define LEFT(value) (IDLE_VALUE - value)
+	#define RIGHT(value) (IDLE_VALUE + value)
+#endif
 
 Servo::Servo()
 {

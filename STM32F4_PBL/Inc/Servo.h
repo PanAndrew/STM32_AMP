@@ -13,6 +13,8 @@
 #include <algorithm>
 #include "pwmDefines.h"
 
+//#define UGV_4X4
+
 class Servo {
 
 	enum status
