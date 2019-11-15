@@ -27,6 +27,6 @@
 #define SIZE_GET_ENCODER 4
 #define SIZE_GET_GPS 20
 
-#define IMU_NUM_OF_ELEM 10
+#define IMU_NUM_OF_ELEM 100
 
 #endif /* GLOBALDEFINES_H_ */
