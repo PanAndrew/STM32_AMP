@@ -29,6 +29,7 @@ public:
 	bool full() const;
 	uint16_t capacity() const;
 	uint16_t size() const;
+	T getOfIndex(uint16_t index);
 };
 
 #endif /* DATABUFFER_H_ */

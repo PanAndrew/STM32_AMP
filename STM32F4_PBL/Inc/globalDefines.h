@@ -25,7 +25,7 @@
 #define SIZE_GET_ACC 10
 #define SIZE_GET_GYRO 10
 #define SIZE_GET_MAG 10
-#define SIZE_GET_ENCODER 4
+#define SIZE_GET_ENCODER 9
 #define SIZE_GET_GPS 45
 #define SIZE_GET_MINI_LIDAR 5
 

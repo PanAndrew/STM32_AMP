@@ -8,6 +8,7 @@
 #include "DataBuffer.h"
 #include "IMUData.h"
 #include "DrivingCommand.h"
+#include "unions.h"
 
 template <class T>
 DataBuffer<T>::DataBuffer(uint8_t size): buffer(std::unique_ptr<T[]>(new T[size])), maxSize(size) {
@@ -91,5 +92,12 @@ uint16_t DataBuffer<T>::size() const
 	return size;
 }
 
+template <class T>
+T DataBuffer<T>::getOfIndex(uint16_t index)
+{
+	return buffer[(tail + index) % maxSize];
+}
+
 template class DataBuffer<IMUData>;
 template class DataBuffer<DrivingCommand>;
+template class DataBuffer<floatUnion>;

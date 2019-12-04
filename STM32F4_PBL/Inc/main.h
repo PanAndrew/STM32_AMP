@@ -60,12 +60,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define ENCODER_L_Pin GPIO_PIN_12
-#define ENCODER_L_GPIO_Port GPIOF
-#define ENCODER_L_EXTI_IRQn EXTI15_10_IRQn
-#define ENCODER_R_Pin GPIO_PIN_13
-#define ENCODER_R_GPIO_Port GPIOF
-#define ENCODER_R_EXTI_IRQn EXTI15_10_IRQn
 #define UART_GPS_TX_Pin GPIO_PIN_5
 #define UART_GPS_TX_GPIO_Port GPIOD
 #define UART_GPS_RX_Pin GPIO_PIN_6

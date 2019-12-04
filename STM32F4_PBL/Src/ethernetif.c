@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -132,9 +132,6 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef* ethHandle)
     GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-    /* Peripheral interrupt init */
-    HAL_NVIC_SetPriority(ETH_IRQn, 1, 0);
-    HAL_NVIC_EnableIRQ(ETH_IRQn);
   /* USER CODE BEGIN ETH_MspInit 1 */
 
   /* USER CODE END ETH_MspInit 1 */
@@ -169,9 +166,6 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* ethHandle)
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_13);
 
     HAL_GPIO_DeInit(GPIOG, GPIO_PIN_11|GPIO_PIN_13);
-
-    /* Peripheral interrupt Deinit*/
-    HAL_NVIC_DisableIRQ(ETH_IRQn);
 
   /* USER CODE BEGIN ETH_MspDeInit 1 */
 
