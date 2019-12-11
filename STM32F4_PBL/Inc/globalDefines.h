@@ -15,6 +15,7 @@
 #define ID_MAG 0x06
 #define ID_ENCODER 0x07
 #define ID_GPS 0x08
+#define ID_MINI_LIDAR 0x09
 
 #define SIZE_SET_PWM 8
 #define SIZE_SET_TIM 6
@@ -26,6 +27,7 @@
 #define SIZE_GET_MAG 10
 #define SIZE_GET_ENCODER 4
 #define SIZE_GET_GPS 45
+#define SIZE_GET_MINI_LIDAR 5
 
 #define IMU_NUM_OF_ELEM 100
 

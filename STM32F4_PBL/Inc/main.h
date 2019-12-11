@@ -70,6 +70,10 @@ void Error_Handler(void);
 #define UART_GPS_TX_GPIO_Port GPIOD
 #define UART_GPS_RX_Pin GPIO_PIN_6
 #define UART_GPS_RX_GPIO_Port GPIOD
+#define UART_MLIDAR_RX_Pin GPIO_PIN_9
+#define UART_MLIDAR_RX_GPIO_Port GPIOG
+#define UART_MLIDAR_TX_Pin GPIO_PIN_14
+#define UART_MLIDAR_TX_GPIO_Port GPIOG
 #define BLUE_LED_Pin GPIO_PIN_7
 #define BLUE_LED_GPIO_Port GPIOB
 #define SPI1_SS_Pin GPIO_PIN_1

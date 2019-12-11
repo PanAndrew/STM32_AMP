@@ -35,8 +35,10 @@
 #include "udp_client.h"
 #include "TimerConfigurator.h"
 #include "GPSManager.h"
+#include "MiniLidarManager.h"
 
 extern "C" void UART_GPS_RX_PROCESSING(void);
+extern "C" void UART_LIDAR_RX_PROCESSING(void);
 
 /* USER CODE END Includes */
 
@@ -71,7 +73,9 @@ TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim11;
 
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart6_rx;
 
 /* USER CODE BEGIN PV */
 
@@ -81,6 +85,7 @@ IMUSensor imuSensors(IMU_NUM_OF_ELEM);
 DataManagement dataManagement;
 TimerConfigurator timerConfig(&htim6, &htim9, &htim7);
 GPSManager gpsManager(&hdma_usart2_rx);
+MiniLidarManager miniLidarManager(&hdma_usart6_rx);
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
@@ -89,7 +94,8 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 	{ID_GYRO, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_GYRO, std::bind(&IMUSensor::getGyroData, &imuSensors, std::placeholders::_1)}},
 	{ID_MAG, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_MAG, std::bind(&IMUSensor::getMagData, &imuSensors, std::placeholders::_1)}},
 	{ID_ENCODER, DataPtrVolumePair{1, SIZE_GET_ENCODER, std::bind(&Encoder::getDataInArray, &encoder, std::placeholders::_1)}},
-	{ID_GPS, DataPtrVolumePair{1, SIZE_GET_GPS, std::bind(&GPSManager::getDataInArray, &gpsManager, std::placeholders::_1)}}
+	{ID_GPS, DataPtrVolumePair{1, SIZE_GET_GPS, std::bind(&GPSManager::getDataInArray, &gpsManager, std::placeholders::_1)}},
+	{ID_MINI_LIDAR, DataPtrVolumePair{1, SIZE_GET_MINI_LIDAR, std::bind(&MiniLidarManager::getDataInArray, &miniLidarManager, std::placeholders::_1)}}
 };
 
 /* USER CODE END PV */
@@ -107,6 +113,7 @@ static void MX_SPI2_Init(void);
 static void MX_TIM10_Init(void);
 static void MX_TIM11_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_USART6_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -178,16 +185,36 @@ void UART_GPS_RX_PROCESSING(void)
 	gpsManager.processRxData();
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void UART_LIDAR_RX_PROCESSING()
 {
-	gpsManager.processRxData();
+	miniLidarManager.processRxData();
 }
 
 void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 {
-	gpsManager.processRxData();
+	if(huart->Instance == USART6)
+	{
+		miniLidarManager.processRxData();
+	}
+
+	if(huart->Instance == USART2)
+	{
+		gpsManager.processRxData();
+	}
 }
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == USART6)
+	{
+		miniLidarManager.processRxData();
+	}
+
+	if(huart->Instance == USART2)
+	{
+		gpsManager.processRxData();
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -231,9 +258,11 @@ int main(void)
   MX_TIM10_Init();
   MX_TIM11_Init();
   MX_USART2_UART_Init();
+  MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_UART_Receive_DMA(&huart2, gpsManager.getDataBuffer(), gpsManager.getBufferLength());
+  HAL_UART_Receive_DMA(&huart6, miniLidarManager.getDataBuffer(), miniLidarManager.getBufferLength());
 
   HAL_I2C_Init(&hi2c1);
   imuSensors.initializeI2C_Sensors(&hi2c1);
@@ -693,18 +722,55 @@ static void MX_USART2_UART_Init(void)
 
 }
 
+/**
+  * @brief USART6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART6_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART6_Init 0 */
+
+  /* USER CODE END USART6_Init 0 */
+
+  /* USER CODE BEGIN USART6_Init 1 */
+
+  /* USER CODE END USART6_Init 1 */
+  huart6.Instance = USART6;
+  huart6.Init.BaudRate = 115200;
+  huart6.Init.WordLength = UART_WORDLENGTH_8B;
+  huart6.Init.StopBits = UART_STOPBITS_1;
+  huart6.Init.Parity = UART_PARITY_NONE;
+  huart6.Init.Mode = UART_MODE_TX_RX;
+  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART6_Init 2 */
+
+  /* USER CODE END USART6_Init 2 */
+
+}
+
 /** 
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void) 
 {
   /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+  /* DMA2_Stream1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
 
 }
 

@@ -10,10 +10,8 @@
 
 #include "stdint.h"
 #include "main.h"
-#include "string.h"
 #include <algorithm>
-
-#define UART_BUFFER_LENGTH 255
+#include <memory>
 
 class UARTBuffer {
 
@@ -22,11 +20,11 @@ class UARTBuffer {
 	uint16_t headPosition = 0;
 	uint16_t tailPosition = 0;
 
-	uint8_t rxBuffer[UART_BUFFER_LENGTH];
+	std::unique_ptr<uint8_t[]> rxBuffer;
 	uint16_t bufferSize;
 
 public:
-	UARTBuffer(DMA_HandleTypeDef* hdmaRxUart);
+	UARTBuffer(DMA_HandleTypeDef* hdmaRxUart, uint16_t bufferSize);
 	virtual ~UARTBuffer();
 
 	void checkRxBuffer();

@@ -7,9 +7,10 @@
 
 #include "UARTBuffer.h"
 
-UARTBuffer::UARTBuffer(DMA_HandleTypeDef* hdmaRxUart)
+UARTBuffer::UARTBuffer(DMA_HandleTypeDef* hdmaRxUart, uint16_t bufferSize): rxBuffer(std::make_unique<uint8_t[]>(bufferSize))
 {
 	this->hdmaRxUart = hdmaRxUart;
+	this->bufferSize = bufferSize;
 }
 
 UARTBuffer::~UARTBuffer() {
@@ -18,12 +19,12 @@ UARTBuffer::~UARTBuffer() {
 
 void UARTBuffer::checkRxBuffer()
 {
-	headPosition = UART_BUFFER_LENGTH - __HAL_DMA_GET_COUNTER(hdmaRxUart);
+	headPosition = bufferSize - __HAL_DMA_GET_COUNTER(hdmaRxUart);
 }
 
 uint16_t UARTBuffer::getBufferLength()
 {
-	return UART_BUFFER_LENGTH;
+	return bufferSize;
 }
 
 uint16_t UARTBuffer::getSize()
@@ -36,7 +37,7 @@ uint16_t UARTBuffer::getSize()
 	}
 	else
 	{
-		size = UART_BUFFER_LENGTH + headPosition - tailPosition;
+		size = bufferSize + headPosition - tailPosition;
 	}
 
 	return size;
@@ -51,24 +52,21 @@ uint16_t UARTBuffer::getData(uint8_t* dataBuffer)
 		if(headPosition > tailPosition)
 		{
 			std::copy_n(&rxBuffer[tailPosition], headPosition - tailPosition, dataBuffer);
-//			memcpy(dataBuffer, &rxBuffer[tailPosition], headPosition - tailPosition);
 		}
 		else
 		{
-			std::copy_n(&rxBuffer[tailPosition], UART_BUFFER_LENGTH - tailPosition, dataBuffer);
-//			memcpy(dataBuffer, &rxBuffer[tailPosition], UART_BUFFER_LENGTH - tailPosition);
+			std::copy_n(&rxBuffer[tailPosition], bufferSize - tailPosition, dataBuffer);
 
 			if(headPosition > 0)
 			{
-				std::copy_n(rxBuffer, headPosition, dataBuffer);
-//				memcpy(dataBuffer, rxBuffer, headPosition);
+				std::copy_n(rxBuffer.get(), headPosition, dataBuffer);
 			}
 		}
 
 		tailPosition = headPosition;
 	}
 
-	if(tailPosition == UART_BUFFER_LENGTH)
+	if(tailPosition == bufferSize)
 	{
 		tailPosition = 0;
 	}
@@ -78,5 +76,5 @@ uint16_t UARTBuffer::getData(uint8_t* dataBuffer)
 
 uint8_t* UARTBuffer::getDataBuffer()
 {
-	return rxBuffer;
+	return rxBuffer.get();
 }

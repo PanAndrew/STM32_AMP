@@ -66,10 +66,13 @@ extern TIM_HandleTypeDef htim9;
 extern TIM_HandleTypeDef htim10;
 extern TIM_HandleTypeDef htim11;
 extern DMA_HandleTypeDef hdma_usart2_rx;
+extern DMA_HandleTypeDef hdma_usart6_rx;
 extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart6;
 /* USER CODE BEGIN EV */
 
 extern void UART_GPS_RX_PROCESSING(void);
+extern void UART_LIDAR_RX_PROCESSING(void);
 
 /* USER CODE END EV */
 
@@ -328,6 +331,20 @@ void TIM7_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles DMA2 stream1 global interrupt.
+  */
+void DMA2_Stream1_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
+
+  /* USER CODE END DMA2_Stream1_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart6_rx);
+  /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream1_IRQn 1 */
+}
+
+/**
   * @brief This function handles Ethernet global interrupt.
   */
 void ETH_IRQHandler(void)
@@ -339,6 +356,25 @@ void ETH_IRQHandler(void)
   /* USER CODE BEGIN ETH_IRQn 1 */
 
   /* USER CODE END ETH_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART6 global interrupt.
+  */
+void USART6_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART6_IRQn 0 */
+
+  /* USER CODE END USART6_IRQn 0 */
+  HAL_UART_IRQHandler(&huart6);
+  /* USER CODE BEGIN USART6_IRQn 1 */
+
+  if(__HAL_UART_GET_FLAG(&huart6, UART_FLAG_IDLE))
+  {
+	  UART_LIDAR_RX_PROCESSING();
+  }
+
+  /* USER CODE END USART6_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

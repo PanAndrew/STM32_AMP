@@ -7,7 +7,7 @@
 
 #include "GPSManager.h"
 
-GPSManager::GPSManager(DMA_HandleTypeDef* hdmaRxUart): uartBuffer(hdmaRxUart)
+GPSManager::GPSManager(DMA_HandleTypeDef* hdmaRxUart): uartBuffer(hdmaRxUart, GPS_UART_BUFFER_LENGTH)
 {
 }
 
@@ -42,7 +42,7 @@ uint8_t* GPSManager::getDataBuffer()
 
 uint8_t GPSManager::getDataInArray(uint8_t* dataBuffer)
 {
-	if(gps.time.isUpdated())
+	if(gps.location.isUpdated())
 	{
 		uint8_t dataToReturn[GPS_OBJECTDATAVOLUME];
 		uint32_t tempValue;
