@@ -7,6 +7,15 @@
 
 #include "DrivingCommand.h"
 
+DrivingCommand::DrivingCommand()
+{
+	servoDirection = 0;
+	servoPWM = 0;
+	motorDirection = 0;
+	dcMotorPWM = 0;
+	timeToDrive = 0;
+}
+
 DrivingCommand::DrivingCommand(uint8_t servoDir, uint16_t servoPWMValue,
 		uint8_t motorDir, uint16_t dcMotorPWMValue, uint16_t timeToDriveValue) {
 

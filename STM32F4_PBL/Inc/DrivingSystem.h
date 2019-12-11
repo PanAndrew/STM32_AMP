@@ -11,6 +11,7 @@
 #include "DCMotorDriver.h"
 #include "Servo.h"
 #include "DrivingCommand.h"
+#include "DataBuffer.h"
 
 #define NUMBER_OF_DC_MOTORS 1
 #define NUMBER_OF_SERVOS 1
@@ -26,7 +27,7 @@ class DrivingSystem {
 	uint32_t lastDrivingCmdTimeStamp;
 	uint32_t remainedTTD;
 
-	std::list<DrivingCommand> commandsQueue;
+	DataBuffer<DrivingCommand> commandsQueueRB;
 
 	void calculateRemainedTTD();
 	bool checkTimeToDrive();

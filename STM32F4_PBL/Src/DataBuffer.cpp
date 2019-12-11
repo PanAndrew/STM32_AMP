@@ -7,6 +7,7 @@
 
 #include "DataBuffer.h"
 #include "IMUData.h"
+#include "DrivingCommand.h"
 
 template <class T>
 DataBuffer<T>::DataBuffer(uint8_t size): buffer(std::unique_ptr<T[]>(new T[size])), maxSize(size) {
@@ -91,3 +92,4 @@ uint16_t DataBuffer<T>::size() const
 }
 
 template class DataBuffer<IMUData>;
+template class DataBuffer<DrivingCommand>;

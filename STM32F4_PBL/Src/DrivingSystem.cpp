@@ -8,7 +8,7 @@
 #include "DrivingSystem.h"
 
 DrivingSystem::DrivingSystem(TIM_HandleTypeDef *htimDC, uint8_t timChannelDC,
-		TIM_HandleTypeDef *htimServo, uint8_t timChannelServo)
+		TIM_HandleTypeDef *htimServo, uint8_t timChannelServo) : commandsQueueRB(MAX_QUEUE_SIZE)
 {
 	dcMotorDriver.initialize(htimDC, timChannelDC);
 	servo.initialize(htimServo, timChannelServo);
@@ -28,7 +28,7 @@ void DrivingSystem::drivingService()
 {
 	if(checkTimeToDrive())
 	{
-		if(!commandsQueue.empty())
+		if(!commandsQueueRB.empty())
 		{
 			loadFrontCommand();
 		}
@@ -52,13 +52,11 @@ void DrivingSystem::drivingService()
 
 void DrivingSystem::loadFrontCommand()
 {
-	DrivingCommand driveCmd = commandsQueue.front();
+	DrivingCommand driveCmd = commandsQueueRB.get();
 
 	dcMotorDriver.configureDesiredPWM(driveCmd.getMotorDirection(), driveCmd.getMotorDesiredPWM());
 	servo.configureDesiredPWM(driveCmd.getServoDirection(), driveCmd.getServoDesiredPWM());
 	timeToDrive = driveCmd.getTimeToDrive();
-
-	commandsQueue.pop_front();
 
 	lastDrivingCmdTimeStamp = HAL_GetTick();
 }
@@ -103,17 +101,17 @@ void DrivingSystem::configureDesiredPWM(uint8_t *dataBuffer)
 
 	if(queueCommandFlag)
 	{
-		if(commandsQueue.size() < MAX_QUEUE_SIZE)
+		if(commandsQueueRB.size() < MAX_QUEUE_SIZE)
 		{
 			DrivingCommand driveCmd = DrivingCommand(servoDirection, servoDesiredPWM,
 					motorDirection, motorDesiredPWM, timeToDriveValue);
 
-			commandsQueue.push_back(driveCmd);
+			commandsQueueRB.put(driveCmd);
 		}
 	}
 	else
 	{
-		commandsQueue.clear();
+		commandsQueueRB.reset();
 
 		dcMotorDriver.configureDesiredPWM(&motorDirection, &motorDesiredPWM);
 		servo.configureDesiredPWM(&servoDirection, &servoDesiredPWM);
@@ -141,7 +139,7 @@ uint8_t DrivingSystem::getDataInArray(uint8_t* dataBuffer)
 	calculateRemainedTTD();
 	dataToReturnMain[5] = remainedTTD >> 8;
 	dataToReturnMain[6] = remainedTTD & 0xFF;
-	dataToReturnMain[7] = commandsQueue.size();
+	dataToReturnMain[7] = commandsQueueRB.size();
 
 	std::copy_n(dataToReturnMain, DATASET_LENGTH, dataBuffer);
 

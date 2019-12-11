@@ -19,6 +19,7 @@ class DrivingCommand {
 	uint16_t timeToDrive;
 
 public:
+	DrivingCommand();
 	DrivingCommand(uint8_t servoDirection, uint16_t servoPWM, uint8_t motorDirection, uint16_t dcMotorPWM, uint16_t timeToDrive);
 	virtual ~DrivingCommand();
 
