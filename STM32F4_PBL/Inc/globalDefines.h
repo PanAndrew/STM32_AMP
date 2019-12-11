@@ -25,7 +25,7 @@
 #define SIZE_GET_GYRO 10
 #define SIZE_GET_MAG 10
 #define SIZE_GET_ENCODER 4
-#define SIZE_GET_GPS 20
+#define SIZE_GET_GPS 45
 
 #define IMU_NUM_OF_ELEM 100
 

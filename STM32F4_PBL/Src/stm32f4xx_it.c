@@ -23,6 +23,9 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+//#include "GPSManager.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,7 +65,11 @@ extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim9;
 extern TIM_HandleTypeDef htim10;
 extern TIM_HandleTypeDef htim11;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
+
+extern void UART_GPS_RX_PROCESSING(void);
 
 /* USER CODE END EV */
 
@@ -203,6 +210,20 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles DMA1 stream5 global interrupt.
+  */
+void DMA1_Stream5_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Stream5_IRQn 0 */
+
+  /* USER CODE END DMA1_Stream5_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart2_rx);
+  /* USER CODE BEGIN DMA1_Stream5_IRQn 1 */
+
+  /* USER CODE END DMA1_Stream5_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM1 break interrupt and TIM9 global interrupt.
   */
 void TIM1_BRK_TIM9_IRQHandler(void)
@@ -242,6 +263,25 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void)
   /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 1 */
 
   /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART2_IRQn 0 */
+
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
+
+  if(__HAL_UART_GET_FLAG(&huart2, UART_FLAG_IDLE))
+  {
+	  UART_GPS_RX_PROCESSING();
+  }
+
+  /* USER CODE END USART2_IRQn 1 */
 }
 
 /**

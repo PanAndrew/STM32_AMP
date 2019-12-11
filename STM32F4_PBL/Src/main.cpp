@@ -34,6 +34,9 @@
 #include "tcp_client.h"
 #include "udp_client.h"
 #include "TimerConfigurator.h"
+#include "GPSManager.h"
+
+extern "C" void UART_GPS_RX_PROCESSING(void);
 
 /* USER CODE END Includes */
 
@@ -67,6 +70,9 @@ TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim11;
 
+UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart2_rx;
+
 /* USER CODE BEGIN PV */
 
 Encoder encoder;
@@ -74,6 +80,7 @@ DrivingSystem drivingSystem(&htim8, TIM_CHANNEL_1, &htim8, TIM_CHANNEL_2);
 IMUSensor imuSensors(IMU_NUM_OF_ELEM);
 DataManagement dataManagement;
 TimerConfigurator timerConfig(&htim6, &htim9, &htim7);
+GPSManager gpsManager(&hdma_usart2_rx);
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
@@ -81,7 +88,8 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 	{ID_ACC, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_ACC, std::bind(&IMUSensor::getAccData, &imuSensors, std::placeholders::_1)}},
 	{ID_GYRO, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_GYRO, std::bind(&IMUSensor::getGyroData, &imuSensors, std::placeholders::_1)}},
 	{ID_MAG, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_MAG, std::bind(&IMUSensor::getMagData, &imuSensors, std::placeholders::_1)}},
-	{ID_ENCODER, DataPtrVolumePair{1, SIZE_GET_ENCODER, std::bind(&Encoder::getDataInArray, &encoder, std::placeholders::_1)}}
+	{ID_ENCODER, DataPtrVolumePair{1, SIZE_GET_ENCODER, std::bind(&Encoder::getDataInArray, &encoder, std::placeholders::_1)}},
+	{ID_GPS, DataPtrVolumePair{1, SIZE_GET_GPS, std::bind(&GPSManager::getDataInArray, &gpsManager, std::placeholders::_1)}}
 };
 
 /* USER CODE END PV */
@@ -89,6 +97,7 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
@@ -97,6 +106,7 @@ static void MX_TIM9_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_TIM10_Init(void);
 static void MX_TIM11_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -163,6 +173,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 }
 
+void UART_GPS_RX_PROCESSING(void)
+{
+	gpsManager.processRxData();
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	gpsManager.processRxData();
+}
+
+void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
+{
+	gpsManager.processRxData();
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -194,6 +220,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
@@ -203,7 +230,10 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM10_Init();
   MX_TIM11_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_UART_Receive_DMA(&huart2, gpsManager.getDataBuffer(), gpsManager.getBufferLength());
 
   HAL_I2C_Init(&hi2c1);
   imuSensors.initializeI2C_Sensors(&hi2c1);
@@ -631,6 +661,54 @@ static void MX_TIM11_Init(void)
 }
 
 /**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 4800;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -645,6 +723,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
 

@@ -66,6 +66,10 @@ void Error_Handler(void);
 #define ENCODER_R_Pin GPIO_PIN_13
 #define ENCODER_R_GPIO_Port GPIOF
 #define ENCODER_R_EXTI_IRQn EXTI15_10_IRQn
+#define UART_GPS_TX_Pin GPIO_PIN_5
+#define UART_GPS_TX_GPIO_Port GPIOD
+#define UART_GPS_RX_Pin GPIO_PIN_6
+#define UART_GPS_RX_GPIO_Port GPIOD
 #define BLUE_LED_Pin GPIO_PIN_7
 #define BLUE_LED_GPIO_Port GPIOB
 #define SPI1_SS_Pin GPIO_PIN_1
