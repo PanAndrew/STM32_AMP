@@ -226,6 +226,7 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 		dataLengthRemain = dataLength - iter;
 	}
 
+	tcp_recved(es->pcb, es->p->len);
 	es->p = NULL;
 	pbuf_free(p);
 }
