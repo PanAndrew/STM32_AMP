@@ -48,34 +48,40 @@ void IMUSensor::initializeSPI_Sensors(SPI_HandleTypeDef *hspi)
 #endif
 }
 
-void IMUSensor::addToBuffer(DataBuffer<IMUData> &buffer, uint8_t size)
+void IMUSensor::addToBuffer(DataBuffer<IMUData> &buffer, uint32_t timeStamp, uint8_t size)
 {
-	IMUData measurement(rawData, HAL_GetTick(), size);
+	IMUData measurement(rawData, timeStamp, size);
 	buffer.put(measurement);
 }
 
 void IMUSensor::pullAccData(I2C_HandleTypeDef *hi2c, uint8_t accDeviceAddr, uint8_t registerAddr, uint8_t size)
 {
-	HAL_I2C_Mem_Read(hi2c, accDeviceAddr, registerAddr, 1, rawData, size, 1);
-
-	for (uint8_t i = 0; i < 6; i += 2)
+	if(HAL_I2C_Mem_Read(hi2c, accDeviceAddr, registerAddr, 1, rawData, size, 1) == HAL_OK)
 	{
-		std::swap(rawData[i], rawData[i + 1]);
-	}
+		dataTimeStamp = HAL_GetTick();
 
-	addToBuffer(accBuffer, size);
+		for (uint8_t i = 0; i < 6; i += 2)
+		{
+			std::swap(rawData[i], rawData[i + 1]);
+		}
+
+		addToBuffer(accBuffer, dataTimeStamp, size);
+	}
 }
 
 void IMUSensor::pullGyroData(I2C_HandleTypeDef *hi2c, uint8_t gyroDeviceAddr, uint8_t registerAddr, uint8_t size)
 {
-	HAL_I2C_Mem_Read(hi2c, gyroDeviceAddr, registerAddr, 1, rawData, size, 1);
-
-	for(uint8_t i = 0; i < 6; i+=2)
+	if(HAL_I2C_Mem_Read(hi2c, gyroDeviceAddr, registerAddr, 1, rawData, size, 1) == HAL_OK)
 	{
-	  std::swap(rawData[i], rawData[i + 1]);
-	}
+		dataTimeStamp = HAL_GetTick();
 
-	addToBuffer(gyroBuffer, size);
+		for(uint8_t i = 0; i < 6; i+=2)
+		{
+		  std::swap(rawData[i], rawData[i + 1]);
+		}
+
+		addToBuffer(gyroBuffer, dataTimeStamp, size);
+	}
 }
 
 void IMUSensor::pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint8_t size)
@@ -85,34 +91,39 @@ void IMUSensor::pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint
 	  HAL_SPI_Receive(hspi, rawData, size, 1);
 	  HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
 
+	  dataTimeStamp = HAL_GetTick();
+
 	  for(uint8_t i = 0; i < 6; i+=2)
 	  {
 		  std::swap(rawData[i], rawData[i + 1]);
 	  }
 
-	  addToBuffer(gyroBuffer, size);
+	  addToBuffer(gyroBuffer, dataTimeStamp, size);
 }
 
 void IMUSensor::pullMagData(I2C_HandleTypeDef *hi2c, uint8_t magDeviceAddr, uint8_t registerAddr, uint8_t size)
 {
-	HAL_I2C_Mem_Read(hi2c, magDeviceAddr, registerAddr, 1, rawData, size, 1);
-
-#ifdef XNucleoV3
-	for(uint8_t i = 0; i < 6; i+=2)
+	if(HAL_I2C_Mem_Read(hi2c, magDeviceAddr, registerAddr, 1, rawData, size, 1) == HAL_OK)
 	{
-		std::swap(rawData[i], rawData[i + 1]);
-	}
-#elif defined(XNucleoV1)
-	for(uint8_t i = 0; i < 6; i+=2)
-	{
-		std::swap(rawData[i], rawData[i + 1]);
-	}
-#else
-	std::swap(rawData[2], rawData[4]);
-	std::swap(rawData[3], rawData[5]);
-#endif
+		dataTimeStamp = HAL_GetTick();
 
-	addToBuffer(magBuffer, size);
+	#ifdef XNucleoV3
+		for(uint8_t i = 0; i < 6; i+=2)
+		{
+			std::swap(rawData[i], rawData[i + 1]);
+		}
+	#elif defined(XNucleoV1)
+		for(uint8_t i = 0; i < 6; i+=2)
+		{
+			std::swap(rawData[i], rawData[i + 1]);
+		}
+	#else
+		std::swap(rawData[2], rawData[4]);
+		std::swap(rawData[3], rawData[5]);
+	#endif
+
+		addToBuffer(magBuffer, dataTimeStamp, size);
+	}
 }
 
 void IMUSensor::pullDataFromSensorsI2C(I2C_HandleTypeDef *hi2c)

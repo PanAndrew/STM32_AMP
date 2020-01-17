@@ -52,12 +52,13 @@ class IMUSensor {
 
 	uint8_t rawData[6];
 	bool readingInProgress = 0;
+	uint32_t dataTimeStamp = 0;
 
 	void pullAccData(I2C_HandleTypeDef *hi2c, uint8_t accDeviceAddr, uint8_t registerAddr, uint8_t size);
 	void pullGyroData(I2C_HandleTypeDef *hi2c, uint8_t gyroDeviceAddr, uint8_t gyroDataAddr, uint8_t size);
 	void pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint8_t size);
 	void pullMagData(I2C_HandleTypeDef *hi2c, uint8_t magDeviceAddr, uint8_t registerAddr, uint8_t size);
-	void addToBuffer(DataBuffer<IMUData> &buffer, uint8_t size);
+	void addToBuffer(DataBuffer<IMUData> &buffer, uint32_t timeStamp, uint8_t size);
 	void writeSPI(SPI_HandleTypeDef *hspi, uint8_t *sensorRegAddr, uint8_t *regValue);
 	void writeI2C(I2C_HandleTypeDef *hi2c, uint8_t sensorAddr , uint8_t *sensorRegAddr, uint8_t *regValue);
 	uint16_t getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer);
