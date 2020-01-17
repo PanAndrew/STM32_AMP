@@ -36,6 +36,7 @@
 #include "TimerConfigurator.h"
 #include "GPSManager.h"
 #include "MiniLidarManager.h"
+#include "TimeSync.h"
 
 extern "C" void UART_GPS_RX_PROCESSING(void);
 extern "C" void UART_LIDAR_RX_PROCESSING(void);
@@ -87,6 +88,7 @@ DataManagement dataManagement;
 TimerConfigurator timerConfig(&htim6, &htim9, &htim7);
 GPSManager gpsManager(&hdma_usart2_rx);
 MiniLidarManager miniLidarManager(&hdma_usart6_rx);
+TimeSync timeSync;
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
@@ -96,7 +98,8 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 	{ID_MAG, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_MAG, std::bind(&IMUSensor::getMagData, &imuSensors, std::placeholders::_1)}},
 	{ID_ENCODER, DataPtrVolumePair{1, SIZE_GET_ENCODER, std::bind(&EncoderSystem::getDataInArray, &encoderSystem, std::placeholders::_1)}},
 	{ID_GPS, DataPtrVolumePair{1, SIZE_GET_GPS, std::bind(&GPSManager::getDataInArray, &gpsManager, std::placeholders::_1)}},
-	{ID_MINI_LIDAR, DataPtrVolumePair{1, SIZE_GET_MINI_LIDAR, std::bind(&MiniLidarManager::getDataInArray, &miniLidarManager, std::placeholders::_1)}}
+	{ID_MINI_LIDAR, DataPtrVolumePair{1, SIZE_GET_MINI_LIDAR, std::bind(&MiniLidarManager::getDataInArray, &miniLidarManager, std::placeholders::_1)}},
+	{ID_TIME_SYNC, DataPtrVolumePair{1, SIZE_GET_TIME_SYNC, std::bind(&TimeSync::getDataInArray, &timeSync, std::placeholders::_1)}}
 };
 
 /* USER CODE END PV */
