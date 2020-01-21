@@ -271,7 +271,7 @@ int main(void)
 
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim7);
-  HAL_TIM_Encoder_Start_IT(&htim8, TIM_CHANNEL_ALL);
+  HAL_TIM_Encoder_Start(&htim8, TIM_CHANNEL_ALL);
   HAL_TIM_Base_Start_IT(&htim10);
   HAL_TIM_Base_Start_IT(&htim9);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
