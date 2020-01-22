@@ -63,6 +63,7 @@ void Encoder::calcSpeed()
 	}
 
 	speed.floatVal = tempSpeed.floatVal / speedBuffer.size();
+	distance.floatVal = (abs(diff) * EXTERN_WHEEL_RATIO) / 10.0;
 }
 
 void Encoder::encoderIteration()
@@ -122,6 +123,11 @@ uint8_t Encoder::getDataInArray(uint8_t* dataBuffer)
 	dataToReturn[2] = speed.arrVal[2];
 	dataToReturn[3] = speed.arrVal[1];
 	dataToReturn[4] = speed.arrVal[0];
+	dataToReturn[5] = distance.arrVal[3];
+	dataToReturn[6] = distance.arrVal[2];
+	dataToReturn[7] = distance.arrVal[1];
+	dataToReturn[8] = distance.arrVal[0];
+
 
 	std::copy_n(dataToReturn, ENCODER_OBJECTDATAVOLUME, dataBuffer);
 

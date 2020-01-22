@@ -39,10 +39,21 @@ uint8_t EncoderSystem::getDataInArray(uint8_t* dataBuffer)
 	dataToReturnMain[2] = dataToReturnLeft[ENCODER_SPEED_2_CMD];
 	dataToReturnMain[3] = dataToReturnLeft[ENCODER_SPEED_1_CMD];
 	dataToReturnMain[4] = dataToReturnLeft[ENCODER_SPEED_0_CMD];
-	dataToReturnMain[5] = dataToReturnRight[ENCODER_SPEED_3_CMD];
-	dataToReturnMain[6] = dataToReturnRight[ENCODER_SPEED_2_CMD];
-	dataToReturnMain[7] = dataToReturnRight[ENCODER_SPEED_1_CMD];
-	dataToReturnMain[8] = dataToReturnRight[ENCODER_SPEED_0_CMD];
+
+	dataToReturnMain[5] = dataToReturnLeft[ENCODER_DISTANCE_3_CMD];
+	dataToReturnMain[6] = dataToReturnLeft[ENCODER_DISTANCE_2_CMD];
+	dataToReturnMain[7] = dataToReturnLeft[ENCODER_DISTANCE_1_CMD];
+	dataToReturnMain[8] = dataToReturnLeft[ENCODER_DISTANCE_0_CMD];
+
+	dataToReturnMain[9] = dataToReturnRight[ENCODER_SPEED_3_CMD];
+	dataToReturnMain[10] = dataToReturnRight[ENCODER_SPEED_2_CMD];
+	dataToReturnMain[11] = dataToReturnRight[ENCODER_SPEED_1_CMD];
+	dataToReturnMain[12] = dataToReturnRight[ENCODER_SPEED_0_CMD];
+
+	dataToReturnMain[13] = dataToReturnRight[ENCODER_DISTANCE_3_CMD];
+	dataToReturnMain[14] = dataToReturnRight[ENCODER_DISTANCE_2_CMD];
+	dataToReturnMain[15] = dataToReturnRight[ENCODER_DISTANCE_1_CMD];
+	dataToReturnMain[16] = dataToReturnRight[ENCODER_DISTANCE_0_CMD];
 
 	std::copy_n(dataToReturnMain, ENCODER_SYS_OBJECTDATAVOLUME, dataBuffer);
 
