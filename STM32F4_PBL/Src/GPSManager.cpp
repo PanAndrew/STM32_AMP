@@ -120,7 +120,7 @@ uint8_t GPSManager::getDataInArray(uint8_t* dataBuffer)
 		dataToReturn[43] = floatUnionObj.floatArr[0];
 
 		//Course - cardinal
-		dataToReturn[44] = *TinyGPSPlus::cardinal(gps.course.deg());
+		//dataToReturn[44] = *TinyGPSPlus::cardinal(gps.course.deg());
 
 		std::copy_n(dataToReturn, GPS_OBJECTDATAVOLUME, dataBuffer);
 

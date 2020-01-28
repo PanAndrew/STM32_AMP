@@ -14,7 +14,7 @@
 #include "TinyGPS++.h"
 
 #define GPS_UART_BUFFER_LENGTH 255
-#define GPS_OBJECTDATAVOLUME 45
+#define GPS_OBJECTDATAVOLUME 44
 
 class GPSManager {
 
