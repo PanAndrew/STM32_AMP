@@ -103,6 +103,8 @@ void Encoder::encoderIteration()
 		tempSpeed.floatVal = 0;
 		speedBuffer.put(tempSpeed);
 
+		distance.floatVal = 0;
+
 		if(!numberOfGoOnChecks)
 		{
 			speed.floatVal = 0;
