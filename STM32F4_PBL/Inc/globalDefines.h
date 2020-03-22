@@ -17,6 +17,9 @@
 #define ID_GPS 0x08
 #define ID_MINI_LIDAR 0x09
 #define ID_TIME_SYNC 0x0A
+#define ID_CAN_DIST 0x0B
+#define ID_CAN_SPEED 0x0C
+#define ID_CAN_REFLE 0x0D
 
 #define SIZE_SET_PWM 8
 #define SIZE_SET_TIM 6
@@ -30,6 +33,9 @@
 #define SIZE_GET_GPS 44
 #define SIZE_GET_MINI_LIDAR 5
 #define SIZE_GET_TIME_SYNC 4
+#define SIZE_CAN_DIST 6
+#define SIZE_CAN_SPEED 6
+#define SIZE_CAN_REFLE 6
 
 #define IMU_NUM_OF_ELEM 100
 

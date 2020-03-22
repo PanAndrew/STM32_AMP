@@ -9,6 +9,7 @@
 #include "IMUData.h"
 #include "DrivingCommand.h"
 #include "unions.h"
+#include "ADASManager.h"
 
 template <class T>
 DataBuffer<T>::DataBuffer(uint8_t size): buffer(std::unique_ptr<T[]>(new T[size])), maxSize(size) {
@@ -101,3 +102,4 @@ T DataBuffer<T>::getOfIndex(uint16_t index)
 template class DataBuffer<IMUData>;
 template class DataBuffer<DrivingCommand>;
 template class DataBuffer<floatUnion>;
+template class DataBuffer<ADASManager>;

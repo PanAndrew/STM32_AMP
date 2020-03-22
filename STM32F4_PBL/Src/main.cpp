@@ -37,6 +37,7 @@
 #include "GPSManager.h"
 #include "MiniLidarManager.h"
 #include "TimeSync.h"
+#include "CANLidar.h"
 
 extern "C" void UART_GPS_RX_PROCESSING(void);
 extern "C" void UART_LIDAR_RX_PROCESSING(void);
@@ -62,6 +63,8 @@ extern "C" void UART_LIDAR_RX_PROCESSING(void);
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CAN_HandleTypeDef hcan1;
+
 I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi2;
@@ -74,6 +77,7 @@ TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim11;
+TIM_HandleTypeDef htim13;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
@@ -90,6 +94,7 @@ TimerConfigurator timerConfig(&htim6, &htim9, &htim7);
 GPSManager gpsManager(&hdma_usart2_rx);
 MiniLidarManager miniLidarManager(&hdma_usart6_rx);
 TimeSync timeSync;
+CANLidar canLidar(&hcan1);
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
@@ -100,6 +105,9 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 	{ID_ENCODER, DataPtrVolumePair{1, SIZE_GET_ENCODER, std::bind(&EncoderSystem::getDataInArray, &encoderSystem, std::placeholders::_1)}},
 	{ID_GPS, DataPtrVolumePair{1, SIZE_GET_GPS, std::bind(&GPSManager::getDataInArray, &gpsManager, std::placeholders::_1)}},
 	{ID_MINI_LIDAR, DataPtrVolumePair{1, SIZE_GET_MINI_LIDAR, std::bind(&MiniLidarManager::getDataInArray, &miniLidarManager, std::placeholders::_1)}},
+	{ID_CAN_DIST, DataPtrVolumePair{1, SIZE_CAN_DIST, std::bind(&CANLidar::getDistanceDataInArray, &canLidar, std::placeholders::_1)}},
+	{ID_CAN_SPEED, DataPtrVolumePair{1, SIZE_CAN_SPEED, std::bind(&CANLidar::getSpeedDataInArray, &canLidar, std::placeholders::_1)}},
+	{ID_CAN_REFLE, DataPtrVolumePair{1, SIZE_CAN_REFLE, std::bind(&CANLidar::getReflectionDataInArray, &canLidar, std::placeholders::_1)}},
 	{ID_TIME_SYNC, DataPtrVolumePair{1, SIZE_GET_TIME_SYNC, std::bind(&TimeSync::getDataInArray, &timeSync, std::placeholders::_1)}}
 };
 
@@ -121,6 +129,8 @@ static void MX_TIM11_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART6_UART_Init(void);
+static void MX_CAN1_Init(void);
+static void MX_TIM13_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -172,6 +182,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		drivingSystem.drivingService();
 	}
+
+	if (htim->Instance == TIM13)
+	{
+		canLidar.scheduleADASFrames();
+	}
 }
 
 void UART_GPS_RX_PROCESSING(void)
@@ -208,6 +223,31 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	{
 		gpsManager.processRxData();
 	}
+}
+
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+	canLidar.sendCANFrames();
+}
+
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+	canLidar.sendCANFrames();
+}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+	canLidar.sendCANFrames();
+}
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	canLidar.processRXData(CAN_RX_FIFO0);
+}
+
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	canLidar.processRXData(CAN_RX_FIFO1);
 }
 
 /* USER CODE END 0 */
@@ -254,7 +294,11 @@ int main(void)
   MX_TIM3_Init();
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
+  MX_CAN1_Init();
+  MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
+
+  canLidar.configureCAN();
 
   HAL_UART_Receive_DMA(&huart2, gpsManager.getDataBuffer(), gpsManager.getBufferLength());
   HAL_UART_Receive_DMA(&huart6, miniLidarManager.getDataBuffer(), miniLidarManager.getBufferLength());
@@ -280,6 +324,7 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
   HAL_TIM_Base_Start_IT(&htim11);
+  HAL_TIM_Base_Start_IT(&htim13);
 
   /* USER CODE END 2 */
 
@@ -345,6 +390,43 @@ void SystemClock_Config(void)
   /** Enables the Clock Security System 
   */
   HAL_RCC_EnableCSS();
+}
+
+/**
+  * @brief CAN1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CAN1_Init(void)
+{
+
+  /* USER CODE BEGIN CAN1_Init 0 */
+
+  /* USER CODE END CAN1_Init 0 */
+
+  /* USER CODE BEGIN CAN1_Init 1 */
+
+  /* USER CODE END CAN1_Init 1 */
+  hcan1.Instance = CAN1;
+  hcan1.Init.Prescaler = 16;
+  hcan1.Init.Mode = CAN_MODE_NORMAL;
+  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_4TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_2TQ;
+  hcan1.Init.TimeTriggeredMode = DISABLE;
+  hcan1.Init.AutoBusOff = DISABLE;
+  hcan1.Init.AutoWakeUp = DISABLE;
+  hcan1.Init.AutoRetransmission = DISABLE;
+  hcan1.Init.ReceiveFifoLocked = DISABLE;
+  hcan1.Init.TransmitFifoPriority = DISABLE;
+  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CAN1_Init 2 */
+
+  /* USER CODE END CAN1_Init 2 */
+
 }
 
 /**
@@ -782,6 +864,37 @@ static void MX_TIM11_Init(void)
   /* USER CODE BEGIN TIM11_Init 2 */
 
   /* USER CODE END TIM11_Init 2 */
+
+}
+
+/**
+  * @brief TIM13 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM13_Init(void)
+{
+
+  /* USER CODE BEGIN TIM13_Init 0 */
+
+  /* USER CODE END TIM13_Init 0 */
+
+  /* USER CODE BEGIN TIM13_Init 1 */
+
+  /* USER CODE END TIM13_Init 1 */
+  htim13.Instance = TIM13;
+  htim13.Init.Prescaler = 8999;
+  htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim13.Init.Period = 99;
+  htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM13_Init 2 */
+
+  /* USER CODE END TIM13_Init 2 */
 
 }
 
