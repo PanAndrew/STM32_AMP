@@ -42,6 +42,7 @@
 #include "DrivingSystem.h"
 #include "globalDefines.h"
 #include "TimerConfigurator.h"
+#include "Electromagnet.h"
 
 #if LWIP_TCP
 
@@ -52,6 +53,7 @@ extern DrivingSystem drivingSystem;
 //extern IMUSensor imuSensors(IMU_NUM_OF_ELEM);
 extern DataManagement dataManagement;
 extern TimerConfigurator timerConfig;
+extern Electromagnet electromagnet;
 
 /* Protocol states */
 enum tcp_server_states
@@ -211,6 +213,20 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 			{
 				timerConfig.configureTimer(&data[iter]);
 				iter += SIZE_SET_TIM;
+			}
+			else
+			{
+				dataLengthRemain = 0;
+				continue;
+			}
+			break;
+
+		case ID_ELECTROMAG:
+			iter++;
+			if (dataLengthRemain > SIZE_SET_ELECTROMAG)
+			{
+				electromagnet.configureElectromagnes(&data[iter]);
+				iter += SIZE_SET_ELECTROMAG;
 			}
 			else
 			{

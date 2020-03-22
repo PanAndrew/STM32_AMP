@@ -60,6 +60,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define RED_LED_Pin GPIO_PIN_14
+#define RED_LED_GPIO_Port GPIOB
 #define UART_RFID_TX_Pin GPIO_PIN_10
 #define UART_RFID_TX_GPIO_Port GPIOC
 #define UART_RFID_RX_Pin GPIO_PIN_11
@@ -68,6 +70,8 @@ void Error_Handler(void);
 #define UART_GPS_TX_GPIO_Port GPIOD
 #define UART_GPS_RX_Pin GPIO_PIN_6
 #define UART_GPS_RX_GPIO_Port GPIOD
+#define GPIO_ELECTROMAGNET_Pin GPIO_PIN_7
+#define GPIO_ELECTROMAGNET_GPIO_Port GPIOD
 #define UART_MLIDAR_RX_Pin GPIO_PIN_9
 #define UART_MLIDAR_RX_GPIO_Port GPIOG
 #define UART_MLIDAR_TX_Pin GPIO_PIN_14

@@ -39,6 +39,7 @@
 #include "TimeSync.h"
 #include "CANLidar.h"
 #include "RFIDManager.h"
+#include "Electromagnet.h"
 
 extern "C" void UART_GPS_RX_PROCESSING(void);
 extern "C" void UART_LIDAR_RX_PROCESSING(void);
@@ -100,6 +101,7 @@ MiniLidarManager miniLidarManager(&hdma_usart6_rx);
 TimeSync timeSync;
 CANLidar canLidar(&hcan1);
 RFIDManager rfidManager(&hdma_uart4_rx);
+Electromagnet electromagnet;
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
@@ -1065,17 +1067,27 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, RED_LED_Pin|BLUE_LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIO_ELECTROMAGNET_GPIO_Port, GPIO_ELECTROMAGNET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : BLUE_LED_Pin */
-  GPIO_InitStruct.Pin = BLUE_LED_Pin;
+  /*Configure GPIO pins : RED_LED_Pin BLUE_LED_Pin */
+  GPIO_InitStruct.Pin = RED_LED_Pin|BLUE_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(BLUE_LED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : GPIO_ELECTROMAGNET_Pin */
+  GPIO_InitStruct.Pin = GPIO_ELECTROMAGNET_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIO_ELECTROMAGNET_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SPI1_SS_Pin */
   GPIO_InitStruct.Pin = SPI1_SS_Pin;
