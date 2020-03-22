@@ -20,6 +20,7 @@
 #define ID_CAN_DIST 0x0B
 #define ID_CAN_SPEED 0x0C
 #define ID_CAN_REFLE 0x0D
+#define ID_RFID 0x0E
 
 #define SIZE_SET_PWM 8
 #define SIZE_SET_TIM 6
@@ -36,6 +37,7 @@
 #define SIZE_CAN_DIST 6
 #define SIZE_CAN_SPEED 6
 #define SIZE_CAN_REFLE 6
+#define SIZE_RFID 5
 
 #define IMU_NUM_OF_ELEM 100
 

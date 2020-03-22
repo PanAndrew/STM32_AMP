@@ -38,9 +38,11 @@
 #include "MiniLidarManager.h"
 #include "TimeSync.h"
 #include "CANLidar.h"
+#include "RFIDManager.h"
 
 extern "C" void UART_GPS_RX_PROCESSING(void);
 extern "C" void UART_LIDAR_RX_PROCESSING(void);
+extern "C" void UART_RFID_RX_PROCESSING(void);
 
 /* USER CODE END Includes */
 
@@ -79,8 +81,10 @@ TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim11;
 TIM_HandleTypeDef htim13;
 
+UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
+DMA_HandleTypeDef hdma_uart4_rx;
 DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart6_rx;
 
@@ -95,6 +99,7 @@ GPSManager gpsManager(&hdma_usart2_rx);
 MiniLidarManager miniLidarManager(&hdma_usart6_rx);
 TimeSync timeSync;
 CANLidar canLidar(&hcan1);
+RFIDManager rfidManager(&hdma_uart4_rx);
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
@@ -108,6 +113,7 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 	{ID_CAN_DIST, DataPtrVolumePair{1, SIZE_CAN_DIST, std::bind(&CANLidar::getDistanceDataInArray, &canLidar, std::placeholders::_1)}},
 	{ID_CAN_SPEED, DataPtrVolumePair{1, SIZE_CAN_SPEED, std::bind(&CANLidar::getSpeedDataInArray, &canLidar, std::placeholders::_1)}},
 	{ID_CAN_REFLE, DataPtrVolumePair{1, SIZE_CAN_REFLE, std::bind(&CANLidar::getReflectionDataInArray, &canLidar, std::placeholders::_1)}},
+	{ID_RFID, DataPtrVolumePair{1, SIZE_RFID, std::bind(&RFIDManager::getDataInArray, &rfidManager, std::placeholders::_1)}},
 	{ID_TIME_SYNC, DataPtrVolumePair{1, SIZE_GET_TIME_SYNC, std::bind(&TimeSync::getDataInArray, &timeSync, std::placeholders::_1)}}
 };
 
@@ -131,6 +137,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_TIM13_Init(void);
+static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -199,6 +206,11 @@ void UART_LIDAR_RX_PROCESSING()
 	miniLidarManager.processRxData();
 }
 
+void UART_RFID_RX_PROCESSING(void)
+{
+	rfidManager.processRxData();
+}
+
 void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == USART6)
@@ -209,6 +221,11 @@ void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 	if(huart->Instance == USART2)
 	{
 		gpsManager.processRxData();
+	}
+
+	if(huart->Instance == UART4)
+	{
+		rfidManager.processRxData();
 	}
 }
 
@@ -222,6 +239,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if(huart->Instance == USART2)
 	{
 		gpsManager.processRxData();
+	}
+
+	if(huart->Instance == UART4)
+	{
+		rfidManager.processRxData();
 	}
 }
 
@@ -296,12 +318,14 @@ int main(void)
   MX_USART6_UART_Init();
   MX_CAN1_Init();
   MX_TIM13_Init();
+  MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 
   canLidar.configureCAN();
 
   HAL_UART_Receive_DMA(&huart2, gpsManager.getDataBuffer(), gpsManager.getBufferLength());
   HAL_UART_Receive_DMA(&huart6, miniLidarManager.getDataBuffer(), miniLidarManager.getBufferLength());
+  HAL_UART_Receive_DMA(&huart4, rfidManager.getDataBuffer(), rfidManager.getBufferLength());
 
   HAL_I2C_Init(&hi2c1);
   imuSensors.initializeI2C_Sensors(&hi2c1);
@@ -899,6 +923,39 @@ static void MX_TIM13_Init(void)
 }
 
 /**
+  * @brief UART4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART4_Init(void)
+{
+
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
+  huart4.Instance = UART4;
+  huart4.Init.BaudRate = 9600;
+  huart4.Init.WordLength = UART_WORDLENGTH_8B;
+  huart4.Init.StopBits = UART_STOPBITS_1;
+  huart4.Init.Parity = UART_PARITY_NONE;
+  huart4.Init.Mode = UART_MODE_RX;
+  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART4_Init 2 */
+
+  /* USER CODE END UART4_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -975,6 +1032,9 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Stream2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
   /* DMA1_Stream5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);

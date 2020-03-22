@@ -60,6 +60,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define UART_RFID_TX_Pin GPIO_PIN_10
+#define UART_RFID_TX_GPIO_Port GPIOC
+#define UART_RFID_RX_Pin GPIO_PIN_11
+#define UART_RFID_RX_GPIO_Port GPIOC
 #define UART_GPS_TX_Pin GPIO_PIN_5
 #define UART_GPS_TX_GPIO_Port GPIOD
 #define UART_GPS_RX_Pin GPIO_PIN_6
