@@ -19,6 +19,8 @@ IMUSensor::~IMUSensor() {
 
 void IMUSensor::initializeI2C_Sensors(I2C_HandleTypeDef *hi2c)
 {
+	i2cHandle = hi2c;
+
 #ifdef XNucleoV3
 	configureAcc(hi2c, LSM6DSO_ACC_CTRL_REG1, LSM6DSO_ACC_CTRL_REG1_VALUE);
 	configureGyro(hi2c, LSM6DSO_GYRO_CTRL_REG_2, LSM6DSO_GYRO_CTRL_REG_2_VALUE);
@@ -209,6 +211,21 @@ void IMUSensor::configureMag(I2C_HandleTypeDef *hi2c, uint8_t magRegAddr, uint8_
 #else
 	writeI2C(hi2c, MAG_SENS_ADDR, &magRegAddr, &regValue);
 #endif
+}
+
+void IMUSensor::accRemoteConfiguration(uint8_t *dataBuffer)
+{
+	configureAcc(i2cHandle, dataBuffer[0], dataBuffer[1]);
+}
+
+void IMUSensor::gyroRemoteConfiguration(uint8_t *dataBuffer)
+{
+	configureGyro(i2cHandle, dataBuffer[0], dataBuffer[1]);
+}
+
+void IMUSensor::magRemoteConfiguration(uint8_t *dataBuffer)
+{
+	configureMag(i2cHandle, dataBuffer[0], dataBuffer[1]);
 }
 
 uint16_t IMUSensor::getBufferDataInArray(DataBuffer<IMUData> &buffer, uint8_t *dataBuffer)

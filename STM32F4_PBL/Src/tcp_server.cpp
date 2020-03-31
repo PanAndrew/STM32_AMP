@@ -43,6 +43,7 @@
 #include "globalDefines.h"
 #include "TimerConfigurator.h"
 #include "Electromagnet.h"
+#include "IMUSensor.h"
 
 #if LWIP_TCP
 
@@ -50,7 +51,7 @@ static struct tcp_pcb *tcp_server_pcb;
 
 //extern Encoder encoder;
 extern DrivingSystem drivingSystem;
-//extern IMUSensor imuSensors(IMU_NUM_OF_ELEM);
+extern IMUSensor imuSensors;
 extern DataManagement dataManagement;
 extern TimerConfigurator timerConfig;
 extern Electromagnet electromagnet;
@@ -227,6 +228,48 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 			{
 				electromagnet.configureElectromagnes(&data[iter]);
 				iter += SIZE_SET_ELECTROMAG;
+			}
+			else
+			{
+				dataLengthRemain = 0;
+				continue;
+			}
+			break;
+
+		case ID_ACC << 1:
+			iter++;
+			if (dataLengthRemain > SIZE_SET_ACC)
+			{
+				imuSensors.accRemoteConfiguration(&data[iter]);
+				iter += SIZE_SET_ACC;
+			}
+			else
+			{
+				dataLengthRemain = 0;
+				continue;
+			}
+			break;
+
+		case ID_GYRO << 1:
+			iter++;
+			if (dataLengthRemain > SIZE_SET_GYRO)
+			{
+				imuSensors.gyroRemoteConfiguration(&data[iter]);
+				iter += SIZE_SET_GYRO;
+			}
+			else
+			{
+				dataLengthRemain = 0;
+				continue;
+			}
+			break;
+
+		case ID_MAG << 1:
+			iter++;
+			if (dataLengthRemain > SIZE_SET_MAG)
+			{
+				imuSensors.magRemoteConfiguration(&data[iter]);
+				iter += SIZE_SET_MAG;
 			}
 			else
 			{
