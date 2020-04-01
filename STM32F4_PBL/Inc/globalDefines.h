@@ -16,12 +16,13 @@
 #define ID_ENCODER 0x07
 #define ID_GPS 0x08
 #define ID_MINI_LIDAR 0x09
-#define ID_TIME_SYNC 0x0A
+#define ID_TIME_SYNC 0xFF
 #define ID_CAN_DIST 0x0B
 #define ID_CAN_SPEED 0x0C
 #define ID_CAN_REFLE 0x0D
 #define ID_RFID 0x0E
 #define ID_ELECTROMAG 0x10
+#define ID_TIM_MEASURE 0x11
 
 #define SIZE_SET_PWM 8
 #define SIZE_SET_TIM 6
@@ -43,6 +44,7 @@
 #define SIZE_CAN_SPEED 6
 #define SIZE_CAN_REFLE 6
 #define SIZE_RFID 5
+#define SIZE_GET_TIME_MEASURE 10
 
 
 #define IMU_NUM_OF_ELEM 100

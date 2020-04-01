@@ -40,6 +40,7 @@
 #include "CANLidar.h"
 #include "RFIDManager.h"
 #include "Electromagnet.h"
+#include "TimeMeasurementSystem.h"
 
 extern "C" void UART_GPS_RX_PROCESSING(void);
 extern "C" void UART_LIDAR_RX_PROCESSING(void);
@@ -81,6 +82,7 @@ TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim11;
 TIM_HandleTypeDef htim13;
+TIM_HandleTypeDef htim14;
 
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
@@ -102,6 +104,7 @@ TimeSync timeSync;
 CANLidar canLidar(&hcan1);
 RFIDManager rfidManager(&hdma_uart4_rx);
 Electromagnet electromagnet;
+TimeMeasurementSystem timMeasureSystem(&htim14);
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
@@ -116,6 +119,7 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 	{ID_CAN_SPEED, DataPtrVolumePair{1, SIZE_CAN_SPEED, std::bind(&CANLidar::getSpeedDataInArray, &canLidar, std::placeholders::_1)}},
 	{ID_CAN_REFLE, DataPtrVolumePair{1, SIZE_CAN_REFLE, std::bind(&CANLidar::getReflectionDataInArray, &canLidar, std::placeholders::_1)}},
 	{ID_RFID, DataPtrVolumePair{1, SIZE_RFID, std::bind(&RFIDManager::getDataInArray, &rfidManager, std::placeholders::_1)}},
+	{ID_TIM_MEASURE, DataPtrVolumePair{1, SIZE_GET_TIME_MEASURE, std::bind(&TimeMeasurementSystem::getDataInArray, &timMeasureSystem, std::placeholders::_1)}},
 	{ID_TIME_SYNC, DataPtrVolumePair{1, SIZE_GET_TIME_SYNC, std::bind(&TimeSync::getDataInArray, &timeSync, std::placeholders::_1)}}
 };
 
@@ -139,6 +143,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_TIM13_Init(void);
+static void MX_TIM14_Init(void);
 static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -160,7 +165,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM6)
 	{
+		timMeasureSystem.takeTS(0);
+
 		imuSensors.pullDataFromSensorsI2C(&hi2c1);
+
+		timMeasureSystem.calculateElapsedTime(0);
 	}
 
 	if (htim->Instance == TIM7)
@@ -170,6 +179,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 	if (htim->Instance == TIM9)
 	{
+		timMeasureSystem.takeTS(1);
+
 		uint16_t dataLength;
 		std::unique_ptr<uint8_t[]> dataBuffer = std::make_unique<uint8_t[]>(dataManagement.getMaxDataSize());
 
@@ -180,21 +191,35 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 #else
 		sendDataWhileConnected(dataBuffer.get(), dataLength);
 #endif
+
+		timMeasureSystem.calculateElapsedTime(1);
 	}
 
 	if (htim->Instance == TIM10)
 	{
+		timMeasureSystem.takeTS(2);
+
 		encoderSystem.encoderService();
+
+		timMeasureSystem.calculateElapsedTime(2);
 	}
 
 	if (htim->Instance == TIM11)
 	{
+		timMeasureSystem.takeTS(3);
+
 		drivingSystem.drivingService();
+
+		timMeasureSystem.calculateElapsedTime(3);
 	}
 
 	if (htim->Instance == TIM13)
 	{
+		timMeasureSystem.takeTS(4);
+
 		canLidar.scheduleADASFrames();
+
+		timMeasureSystem.calculateElapsedTime(4);
 	}
 }
 
@@ -320,6 +345,7 @@ int main(void)
   MX_USART6_UART_Init();
   MX_CAN1_Init();
   MX_TIM13_Init();
+  MX_TIM14_Init();
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 
@@ -341,6 +367,7 @@ int main(void)
   udp_client_connect();
 #endif
 
+  HAL_TIM_Base_Start(&htim14);
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim7);
   HAL_TIM_Encoder_Start(&htim8, TIM_CHANNEL_ALL);
@@ -923,6 +950,37 @@ static void MX_TIM13_Init(void)
   /* USER CODE BEGIN TIM13_Init 2 */
 
   /* USER CODE END TIM13_Init 2 */
+
+}
+
+/**
+  * @brief TIM14 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM14_Init(void)
+{
+
+  /* USER CODE BEGIN TIM14_Init 0 */
+
+  /* USER CODE END TIM14_Init 0 */
+
+  /* USER CODE BEGIN TIM14_Init 1 */
+
+  /* USER CODE END TIM14_Init 1 */
+  htim14.Instance = TIM14;
+  htim14.Init.Prescaler = 89;
+  htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim14.Init.Period = 65500;
+  htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM14_Init 2 */
+
+  /* USER CODE END TIM14_Init 2 */
 
 }
 
