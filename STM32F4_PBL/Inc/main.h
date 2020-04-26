@@ -74,6 +74,10 @@ void Error_Handler(void);
 #define UART_RFID_TX_GPIO_Port GPIOC
 #define UART_RFID_RX_Pin GPIO_PIN_11
 #define UART_RFID_RX_GPIO_Port GPIOC
+#define ULTRASOUND_TX_Pin GPIO_PIN_12
+#define ULTRASOUND_TX_GPIO_Port GPIOC
+#define ULTRASOUND_RX_Pin GPIO_PIN_2
+#define ULTRASOUND_RX_GPIO_Port GPIOD
 #define UART_GPS_TX_Pin GPIO_PIN_5
 #define UART_GPS_TX_GPIO_Port GPIOD
 #define UART_GPS_RX_Pin GPIO_PIN_6

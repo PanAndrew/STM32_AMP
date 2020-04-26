@@ -67,11 +67,14 @@ extern TIM_HandleTypeDef htim8;
 extern TIM_HandleTypeDef htim9;
 extern TIM_HandleTypeDef htim10;
 extern TIM_HandleTypeDef htim11;
+extern TIM_HandleTypeDef htim12;
 extern TIM_HandleTypeDef htim13;
 extern DMA_HandleTypeDef hdma_uart4_rx;
+extern DMA_HandleTypeDef hdma_uart5_rx;
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern DMA_HandleTypeDef hdma_usart6_rx;
 extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart6;
 /* USER CODE BEGIN EV */
@@ -79,6 +82,7 @@ extern UART_HandleTypeDef huart6;
 extern void UART_GPS_RX_PROCESSING(void);
 extern void UART_LIDAR_RX_PROCESSING(void);
 extern void UART_RFID_RX_PROCESSING(void);
+extern void UART_ULTRASOUND_RX_PROCESSING(void);
 
 /* USER CODE END EV */
 
@@ -219,6 +223,20 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles DMA1 stream0 global interrupt.
+  */
+void DMA1_Stream0_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Stream0_IRQn 0 */
+
+  /* USER CODE END DMA1_Stream0_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_uart5_rx);
+  /* USER CODE BEGIN DMA1_Stream0_IRQn 1 */
+
+  /* USER CODE END DMA1_Stream0_IRQn 1 */
+}
+
+/**
   * @brief This function handles DMA1 stream2 global interrupt.
   */
 void DMA1_Stream2_IRQHandler(void)
@@ -339,6 +357,21 @@ void USART2_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles TIM8 break interrupt and TIM12 global interrupt.
+  */
+void TIM8_BRK_TIM12_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM8_BRK_TIM12_IRQn 0 */
+
+  /* USER CODE END TIM8_BRK_TIM12_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim8);
+  HAL_TIM_IRQHandler(&htim12);
+  /* USER CODE BEGIN TIM8_BRK_TIM12_IRQn 1 */
+
+  /* USER CODE END TIM8_BRK_TIM12_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM8 update interrupt and TIM13 global interrupt.
   */
 void TIM8_UP_TIM13_IRQHandler(void)
@@ -370,6 +403,25 @@ void UART4_IRQHandler(void)
   }
 
   /* USER CODE END UART4_IRQn 1 */
+}
+
+/**
+  * @brief This function handles UART5 global interrupt.
+  */
+void UART5_IRQHandler(void)
+{
+  /* USER CODE BEGIN UART5_IRQn 0 */
+
+  /* USER CODE END UART5_IRQn 0 */
+  HAL_UART_IRQHandler(&huart5);
+  /* USER CODE BEGIN UART5_IRQn 1 */
+
+  if(__HAL_UART_GET_FLAG(&huart5, UART_FLAG_IDLE))
+  {
+	  UART_ULTRASOUND_RX_PROCESSING();
+  }
+
+  /* USER CODE END UART5_IRQn 1 */
 }
 
 /**

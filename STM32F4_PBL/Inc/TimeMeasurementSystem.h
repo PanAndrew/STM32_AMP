@@ -12,7 +12,7 @@
 #include "main.h"
 #include <algorithm>
 
-#define TIME_MEASURE_OBJECTS 5
+#define TIME_MEASURE_OBJECTS 6
 #define TIME_MEASURE_OBJECTDATAVOLUME TIME_MEASURE_OBJECTS * 2
 
 class TimeMeasurementSystem {

@@ -21,6 +21,7 @@
 #define ID_CAN_SPEED 0x0C
 #define ID_CAN_REFLE 0x0D
 #define ID_RFID 0x0E
+#define ID_ULTRASOUND 0x0F
 #define ID_ELECTROMAG 0x10
 #define ID_TIM_MEASURE 0x11
 
@@ -44,6 +45,7 @@
 #define SIZE_CAN_SPEED 6
 #define SIZE_CAN_REFLE 6
 #define SIZE_RFID 5
+#define SIZE_GET_ULTRASOUND 2
 #define SIZE_GET_TIME_MEASURE 10
 
 

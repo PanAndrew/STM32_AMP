@@ -26,6 +26,8 @@
 /* USER CODE END Includes */
 extern DMA_HandleTypeDef hdma_uart4_rx;
 
+extern DMA_HandleTypeDef hdma_uart5_rx;
+
 extern DMA_HandleTypeDef hdma_usart2_rx;
 
 extern DMA_HandleTypeDef hdma_usart6_rx;
@@ -395,6 +397,20 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 
   /* USER CODE END TIM11_MspInit 1 */
   }
+  else if(htim_base->Instance==TIM12)
+  {
+  /* USER CODE BEGIN TIM12_MspInit 0 */
+
+  /* USER CODE END TIM12_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_TIM12_CLK_ENABLE();
+    /* TIM12 interrupt Init */
+    HAL_NVIC_SetPriority(TIM8_BRK_TIM12_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(TIM8_BRK_TIM12_IRQn);
+  /* USER CODE BEGIN TIM12_MspInit 1 */
+
+  /* USER CODE END TIM12_MspInit 1 */
+  }
   else if(htim_base->Instance==TIM13)
   {
   /* USER CODE BEGIN TIM13_MspInit 0 */
@@ -477,6 +493,8 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* htim_encoder)
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     /* TIM8 interrupt Init */
+    HAL_NVIC_SetPriority(TIM8_BRK_TIM12_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(TIM8_BRK_TIM12_IRQn);
     HAL_NVIC_SetPriority(TIM8_UP_TIM13_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(TIM8_UP_TIM13_IRQn);
   /* USER CODE BEGIN TIM8_MspInit 1 */
@@ -649,6 +667,27 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 
   /* USER CODE END TIM11_MspDeInit 1 */
   }
+  else if(htim_base->Instance==TIM12)
+  {
+  /* USER CODE BEGIN TIM12_MspDeInit 0 */
+
+  /* USER CODE END TIM12_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_TIM12_CLK_DISABLE();
+
+    /* TIM12 interrupt DeInit */
+  /* USER CODE BEGIN TIM12:TIM8_BRK_TIM12_IRQn disable */
+    /**
+    * Uncomment the line below to disable the "TIM8_BRK_TIM12_IRQn" interrupt
+    * Be aware, disabling shared interrupt may affect other IPs
+    */
+    /* HAL_NVIC_DisableIRQ(TIM8_BRK_TIM12_IRQn); */
+  /* USER CODE END TIM12:TIM8_BRK_TIM12_IRQn disable */
+
+  /* USER CODE BEGIN TIM12_MspDeInit 1 */
+
+  /* USER CODE END TIM12_MspDeInit 1 */
+  }
   else if(htim_base->Instance==TIM13)
   {
   /* USER CODE BEGIN TIM13_MspDeInit 0 */
@@ -725,6 +764,14 @@ void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef* htim_encoder)
     HAL_GPIO_DeInit(GPIOC, GPIO_PIN_6|GPIO_PIN_7);
 
     /* TIM8 interrupt DeInit */
+  /* USER CODE BEGIN TIM8:TIM8_BRK_TIM12_IRQn disable */
+    /**
+    * Uncomment the line below to disable the "TIM8_BRK_TIM12_IRQn" interrupt
+    * Be aware, disabling shared interrupt may affect other IPs
+    */
+    /* HAL_NVIC_DisableIRQ(TIM8_BRK_TIM12_IRQn); */
+  /* USER CODE END TIM8:TIM8_BRK_TIM12_IRQn disable */
+
   /* USER CODE BEGIN TIM8:TIM8_UP_TIM13_IRQn disable */
     /**
     * Uncomment the line below to disable the "TIM8_UP_TIM13_IRQn" interrupt
@@ -794,6 +841,60 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   /* USER CODE BEGIN UART4_MspInit 1 */
 
   /* USER CODE END UART4_MspInit 1 */
+  }
+  else if(huart->Instance==UART5)
+  {
+  /* USER CODE BEGIN UART5_MspInit 0 */
+
+  /* USER CODE END UART5_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_UART5_CLK_ENABLE();
+  
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    /**UART5 GPIO Configuration    
+    PC12     ------> UART5_TX
+    PD2     ------> UART5_RX 
+    */
+    GPIO_InitStruct.Pin = ULTRASOUND_TX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF8_UART5;
+    HAL_GPIO_Init(ULTRASOUND_TX_GPIO_Port, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = ULTRASOUND_RX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF8_UART5;
+    HAL_GPIO_Init(ULTRASOUND_RX_GPIO_Port, &GPIO_InitStruct);
+
+    /* UART5 DMA Init */
+    /* UART5_RX Init */
+    hdma_uart5_rx.Instance = DMA1_Stream0;
+    hdma_uart5_rx.Init.Channel = DMA_CHANNEL_4;
+    hdma_uart5_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_uart5_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_uart5_rx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_uart5_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_uart5_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_uart5_rx.Init.Mode = DMA_CIRCULAR;
+    hdma_uart5_rx.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_uart5_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_uart5_rx) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(huart,hdmarx,hdma_uart5_rx);
+
+    /* UART5 interrupt Init */
+    HAL_NVIC_SetPriority(UART5_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(UART5_IRQn);
+  /* USER CODE BEGIN UART5_MspInit 1 */
+
+  /* USER CODE END UART5_MspInit 1 */
   }
   else if(huart->Instance==USART2)
   {
@@ -920,6 +1021,31 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
   /* USER CODE BEGIN UART4_MspDeInit 1 */
 
   /* USER CODE END UART4_MspDeInit 1 */
+  }
+  else if(huart->Instance==UART5)
+  {
+  /* USER CODE BEGIN UART5_MspDeInit 0 */
+
+  /* USER CODE END UART5_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_UART5_CLK_DISABLE();
+  
+    /**UART5 GPIO Configuration    
+    PC12     ------> UART5_TX
+    PD2     ------> UART5_RX 
+    */
+    HAL_GPIO_DeInit(ULTRASOUND_TX_GPIO_Port, ULTRASOUND_TX_Pin);
+
+    HAL_GPIO_DeInit(ULTRASOUND_RX_GPIO_Port, ULTRASOUND_RX_Pin);
+
+    /* UART5 DMA DeInit */
+    HAL_DMA_DeInit(huart->hdmarx);
+
+    /* UART5 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(UART5_IRQn);
+  /* USER CODE BEGIN UART5_MspDeInit 1 */
+
+  /* USER CODE END UART5_MspDeInit 1 */
   }
   else if(huart->Instance==USART2)
   {

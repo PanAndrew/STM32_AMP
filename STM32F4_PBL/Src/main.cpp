@@ -41,10 +41,12 @@
 #include "RFIDManager.h"
 #include "Electromagnet.h"
 #include "TimeMeasurementSystem.h"
+#include "UltrasoundManager.h"
 
 extern "C" void UART_GPS_RX_PROCESSING(void);
 extern "C" void UART_LIDAR_RX_PROCESSING(void);
 extern "C" void UART_RFID_RX_PROCESSING(void);
+extern "C" void UART_ULTRASOUND_RX_PROCESSING(void);
 
 /* USER CODE END Includes */
 
@@ -81,13 +83,16 @@ TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim11;
+TIM_HandleTypeDef htim12;
 TIM_HandleTypeDef htim13;
 TIM_HandleTypeDef htim14;
 
 UART_HandleTypeDef huart4;
+UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_uart4_rx;
+DMA_HandleTypeDef hdma_uart5_rx;
 DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart6_rx;
 
@@ -105,6 +110,7 @@ CANLidar canLidar(&hcan1);
 RFIDManager rfidManager(&hdma_uart4_rx);
 Electromagnet electromagnet;
 TimeMeasurementSystem timMeasureSystem(&htim14);
+UltrasoundManager ultrasoundManager(&hdma_uart5_rx, &huart5);
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
@@ -119,6 +125,7 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 	{ID_CAN_SPEED, DataPtrVolumePair{1, SIZE_CAN_SPEED, std::bind(&CANLidar::getSpeedDataInArray, &canLidar, std::placeholders::_1)}},
 	{ID_CAN_REFLE, DataPtrVolumePair{1, SIZE_CAN_REFLE, std::bind(&CANLidar::getReflectionDataInArray, &canLidar, std::placeholders::_1)}},
 	{ID_RFID, DataPtrVolumePair{1, SIZE_RFID, std::bind(&RFIDManager::getDataInArray, &rfidManager, std::placeholders::_1)}},
+	{ID_ULTRASOUND, DataPtrVolumePair{1, SIZE_GET_ULTRASOUND, std::bind(&UltrasoundManager::getDataInArray, &ultrasoundManager, std::placeholders::_1)}},
 	{ID_TIM_MEASURE, DataPtrVolumePair{1, SIZE_GET_TIME_MEASURE, std::bind(&TimeMeasurementSystem::getDataInArray, &timMeasureSystem, std::placeholders::_1)}},
 	{ID_TIME_SYNC, DataPtrVolumePair{1, SIZE_GET_TIME_SYNC, std::bind(&TimeSync::getDataInArray, &timeSync, std::placeholders::_1)}}
 };
@@ -142,9 +149,11 @@ static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_CAN1_Init(void);
+static void MX_TIM12_Init(void);
 static void MX_TIM13_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_UART4_Init(void);
+static void MX_UART5_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -221,6 +230,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 		timMeasureSystem.calculateElapsedTime(4);
 	}
+
+	if (htim->Instance == TIM12)
+	{
+		timMeasureSystem.takeTS(5);
+
+		ultrasoundManager.fetchDistanceData();
+
+		timMeasureSystem.takeTS(5);
+	}
 }
 
 void UART_GPS_RX_PROCESSING(void)
@@ -238,11 +256,21 @@ void UART_RFID_RX_PROCESSING(void)
 	rfidManager.processRxData();
 }
 
+void UART_ULTRASOUND_RX_PROCESSING(void)
+{
+	ultrasoundManager.processRxData();
+}
+
 void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == USART6)
 	{
 		miniLidarManager.processRxData();
+	}
+
+	if(huart->Instance == UART5)
+	{
+		ultrasoundManager.processRxData();
 	}
 
 	if(huart->Instance == USART2)
@@ -261,6 +289,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if(huart->Instance == USART6)
 	{
 		miniLidarManager.processRxData();
+	}
+
+	if(huart->Instance == UART5)
+	{
+		ultrasoundManager.processRxData();
 	}
 
 	if(huart->Instance == USART2)
@@ -344,9 +377,11 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
   MX_CAN1_Init();
+  MX_TIM12_Init();
   MX_TIM13_Init();
   MX_TIM14_Init();
   MX_UART4_Init();
+  MX_UART5_Init();
   /* USER CODE BEGIN 2 */
 
   canLidar.configureCAN();
@@ -375,6 +410,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim10);
   HAL_CAN_Start(&hcan1);
   HAL_TIM_Base_Start_IT(&htim13);
+  HAL_TIM_Base_Start(&htim12);
   HAL_TIM_Base_Start_IT(&htim9);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
@@ -923,6 +959,44 @@ static void MX_TIM11_Init(void)
 }
 
 /**
+  * @brief TIM12 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM12_Init(void)
+{
+
+  /* USER CODE BEGIN TIM12_Init 0 */
+
+  /* USER CODE END TIM12_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+
+  /* USER CODE BEGIN TIM12_Init 1 */
+
+  /* USER CODE END TIM12_Init 1 */
+  htim12.Instance = TIM12;
+  htim12.Init.Prescaler = 8999;
+  htim12.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim12.Init.Period = 199;
+  htim12.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim12.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim12) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim12, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM12_Init 2 */
+
+  /* USER CODE END TIM12_Init 2 */
+
+}
+
+/**
   * @brief TIM13 Initialization Function
   * @param None
   * @retval None
@@ -1018,6 +1092,39 @@ static void MX_UART4_Init(void)
 }
 
 /**
+  * @brief UART5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART5_Init(void)
+{
+
+  /* USER CODE BEGIN UART5_Init 0 */
+
+  /* USER CODE END UART5_Init 0 */
+
+  /* USER CODE BEGIN UART5_Init 1 */
+
+  /* USER CODE END UART5_Init 1 */
+  huart5.Instance = UART5;
+  huart5.Init.BaudRate = 9600;
+  huart5.Init.WordLength = UART_WORDLENGTH_8B;
+  huart5.Init.StopBits = UART_STOPBITS_1;
+  huart5.Init.Parity = UART_PARITY_NONE;
+  huart5.Init.Mode = UART_MODE_TX_RX;
+  huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART5_Init 2 */
+
+  /* USER CODE END UART5_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -1094,6 +1201,9 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
   /* DMA1_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
