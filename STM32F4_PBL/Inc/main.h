@@ -60,6 +60,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define BRIDGE_B1_Pin GPIO_PIN_3
+#define BRIDGE_B1_GPIO_Port GPIOF
+#define BRIDGE_A2_Pin GPIO_PIN_5
+#define BRIDGE_A2_GPIO_Port GPIOF
+#define BRIDGE_A1_Pin GPIO_PIN_10
+#define BRIDGE_A1_GPIO_Port GPIOF
+#define BRIDGE_B2_Pin GPIO_PIN_0
+#define BRIDGE_B2_GPIO_Port GPIOC
 #define RED_LED_Pin GPIO_PIN_14
 #define RED_LED_GPIO_Port GPIOB
 #define UART_RFID_TX_Pin GPIO_PIN_10

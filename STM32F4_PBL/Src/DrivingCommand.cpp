@@ -9,20 +9,21 @@
 
 DrivingCommand::DrivingCommand()
 {
-	servoDirection = 0;
-	servoPWM = 0;
-	motorDirection = 0;
-	dcMotorPWM = 0;
+	firstDirection = 0;
+	firstPWM = 0;
+	secondDirection = 0;
+	secondPWM = 0;
 	timeToDrive = 0;
 }
 
-DrivingCommand::DrivingCommand(uint8_t servoDir, uint16_t servoPWMValue,
-		uint8_t motorDir, uint16_t dcMotorPWMValue, uint16_t timeToDriveValue) {
+DrivingCommand::DrivingCommand(uint8_t firstDir, uint16_t firstPWMValue,
+		uint8_t secondDir, uint16_t secondPWMValue, uint16_t timeToDriveValue)
+{
 
-	servoDirection = servoDir;
-	servoPWM = servoPWMValue;
-	motorDirection = motorDir;
-	dcMotorPWM = dcMotorPWMValue;
+	firstDirection = firstDir;
+	firstPWM = firstPWMValue;
+	secondDirection = secondDir;
+	secondPWM = secondPWMValue;
 	timeToDrive = timeToDriveValue;
 }
 
@@ -31,24 +32,24 @@ DrivingCommand::~DrivingCommand() {
 }
 
 
-uint16_t* DrivingCommand::getMotorDesiredPWM()
+uint16_t* DrivingCommand::getSecondPWM()
 {
-	return &dcMotorPWM;
+	return &secondPWM;
 }
 
-uint8_t* DrivingCommand::getMotorDirection()
+uint8_t* DrivingCommand::getSecondDirection()
 {
-	return &motorDirection;
+	return &secondDirection;
 }
 
-uint8_t* DrivingCommand::getServoDirection()
+uint8_t* DrivingCommand::getFirstDirection()
 {
-	return &servoDirection;
+	return &firstDirection;
 }
 
-uint16_t* DrivingCommand::getServoDesiredPWM()
+uint16_t* DrivingCommand::getFirstPWM()
 {
-	return &servoPWM;
+	return &firstPWM;
 }
 
 uint16_t DrivingCommand::getTimeToDrive()

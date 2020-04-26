@@ -12,21 +12,22 @@
 
 class DrivingCommand {
 
-	uint8_t servoDirection;
-	uint8_t motorDirection;
-	uint16_t dcMotorPWM;
-	uint16_t servoPWM;
+	uint8_t firstDirection;
+	uint8_t secondDirection;
+	uint16_t firstPWM;
+	uint16_t secondPWM;
 	uint16_t timeToDrive;
 
 public:
 	DrivingCommand();
-	DrivingCommand(uint8_t servoDirection, uint16_t servoPWM, uint8_t motorDirection, uint16_t dcMotorPWM, uint16_t timeToDrive);
+	DrivingCommand(uint8_t firstDir, uint16_t firstPWMValue,
+			uint8_t secondDir, uint16_t secondPWMValue, uint16_t timeToDriveValue);
 	virtual ~DrivingCommand();
 
-	uint16_t* getMotorDesiredPWM();
-	uint8_t* getMotorDirection();
-	uint8_t* getServoDirection();
-	uint16_t* getServoDesiredPWM();
+	uint16_t* getSecondPWM();
+	uint8_t* getSecondDirection();
+	uint8_t* getFirstDirection();
+	uint16_t* getFirstPWM();
 	uint16_t getTimeToDrive();
 };
 

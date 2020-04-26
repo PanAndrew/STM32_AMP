@@ -8,20 +8,28 @@
 #ifndef DRIVINGSYSTEM_H_
 #define DRIVINGSYSTEM_H_
 
-#include "DCMotorDriver.h"
-#include "Servo.h"
+#define DIFF_MOTOR
+
+#ifdef DIFF_MOTOR
+	#include "DifferentialDCMotor.h"
+#else
+	#include "DCMotorDriver.h"
+	#include "Servo.h"
+#endif
+
 #include "DrivingCommand.h"
 #include "DataBuffer.h"
-
-#define NUMBER_OF_DC_MOTORS 1
-#define NUMBER_OF_SERVOS 1
 
 #define DATASET_LENGTH 8
 
 class DrivingSystem {
 
+#ifdef DIFF_MOTOR
+	DifferentialDCMotor diffMotors;
+#else
 	DCMotorDriver dcMotorDriver;
 	Servo servo;
+#endif
 
 	uint16_t timeToDrive;
 	uint32_t lastDrivingCmdTimeStamp;
