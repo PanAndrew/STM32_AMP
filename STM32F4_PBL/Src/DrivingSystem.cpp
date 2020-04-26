@@ -154,9 +154,9 @@ uint8_t DrivingSystem::getDataInArray(uint8_t* dataBuffer)
 	uint8_t dataToReturnMain[DATASET_LENGTH];
 
 #ifdef DIFF_MOTOR
-	uint8_t dataToReturnDiffMotors[DIFF_MOTOR_OBJECTDATAVOLUME];
-	diffMotors.getDataInArray(dataToReturnDiffMotors);
-	std::copy_n(dataToReturnDiffMotors, DIFF_MOTOR_OBJECTDATAVOLUME, dataToReturnMain);
+//	uint8_t dataToReturnDiffMotors[DIFF_MOTOR_OBJECTDATAVOLUME];
+	diffMotors.getDataInArray(dataToReturnMain);
+//	std::copy_n(dataToReturnDiffMotors, DIFF_MOTOR_OBJECTDATAVOLUME, dataToReturnMain);
 #else
 	uint8_t dataToReturnServo[SERVO_OBJECTDATAVOLUME];
 	uint8_t dataToReturnDC[MOTOR_OBJECTDATAVOLUME];

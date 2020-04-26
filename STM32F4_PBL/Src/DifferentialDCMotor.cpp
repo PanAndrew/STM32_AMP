@@ -197,7 +197,7 @@ void DifferentialDCMotor::configureDesiredPWM(uint8_t *leftMotorDirection, uint8
 
 uint8_t DifferentialDCMotor::getDataInArray(uint8_t *dataBuffer)
 {
-	uint8_t dataToReturn[MOTOR_OBJECTDATAVOLUME];
+	uint8_t dataToReturn[DIFF_MOTOR_OBJECTDATAVOLUME];
 
 	dataToReturn[0] = motorPresentStatus[LEFT_MOTOR] << 4 |  motorPresentStatus[RIGHT_MOTOR];
 	dataToReturn[1] = pwmValue[LEFT_MOTOR] >> 8;
@@ -205,7 +205,7 @@ uint8_t DifferentialDCMotor::getDataInArray(uint8_t *dataBuffer)
 	dataToReturn[3] = pwmValue[RIGHT_MOTOR] >> 8;
 	dataToReturn[4] = pwmValue[RIGHT_MOTOR] & 0xFF;
 
-	std::copy_n(dataToReturn, MOTOR_OBJECTDATAVOLUME, dataBuffer);
+	std::copy_n(dataToReturn, DIFF_MOTOR_OBJECTDATAVOLUME, dataBuffer);
 
-	return MOTOR_OBJECTDATAVOLUME;
+	return DIFF_MOTOR_OBJECTDATAVOLUME;
 }

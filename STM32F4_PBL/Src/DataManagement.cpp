@@ -79,6 +79,7 @@ uint16_t DataManagement::getMaxDataSize()
 uint16_t DataManagement::getCollectedData(uint8_t* globalBuffer)
 {
 	std::unique_ptr<uint8_t[]> dataBuffer = std::make_unique<uint8_t[]>(maxDataSize);
+	DataPtrVolumePair* tempObj;
 	uint16_t dataSize = 0;
 	uint8_t returnedSize = 0;
 
@@ -87,7 +88,9 @@ uint16_t DataManagement::getCollectedData(uint8_t* globalBuffer)
 		dataBuffer[dataSize] = indexID;
 		dataSize++;
 
-		returnedSize = dataPtrMap->at(indexID).getFunction()(&dataBuffer[++dataSize]);
+		tempObj = &(dataPtrMap->at(indexID));
+		returnedSize = tempObj->getFunction()(&dataBuffer[++dataSize]);
+//		returnedSize = dataPtrMap->at(indexID).getFunction()(&dataBuffer[++dataSize]);
 
 		if(!returnedSize)
 		{
@@ -95,7 +98,7 @@ uint16_t DataManagement::getCollectedData(uint8_t* globalBuffer)
 			continue;
 		}
 
-		dataBuffer[dataSize - 1] = returnedSize;
+		dataBuffer[dataSize - 1] = returnedSize / tempObj->getSizeOfElement();
 
 		dataSize += returnedSize;
 	}

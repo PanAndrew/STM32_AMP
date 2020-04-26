@@ -389,6 +389,7 @@ int main(void)
   HAL_UART_Receive_DMA(&huart2, gpsManager.getDataBuffer(), gpsManager.getBufferLength());
   HAL_UART_Receive_DMA(&huart6, miniLidarManager.getDataBuffer(), miniLidarManager.getBufferLength());
   HAL_UART_Receive_DMA(&huart4, rfidManager.getDataBuffer(), rfidManager.getBufferLength());
+  HAL_UART_Receive_DMA(&huart5, ultrasoundManager.getDataBuffer(), ultrasoundManager.getBufferLength());
 
   HAL_I2C_Init(&hi2c1);
   imuSensors.initializeI2C_Sensors(&hi2c1);
