@@ -10,6 +10,7 @@
 
 #include "stdint.h"
 #include <algorithm>
+#include "unions.h"
 #include "main.h"
 
 #define TIMER_ID 0
@@ -23,13 +24,15 @@
 #define HTIM_DATA_SEND_ID 9
 #define HTIM_LED 7
 
-#define TIM_CONF_OBJECTDATAVOLUME 14
+#define TIM_CONF_OBJECTDATAVOLUME 18
 
 class TimerConfigurator {
 
 	TIM_HandleTypeDef* htimIMU;
 	TIM_HandleTypeDef* htimDataSend;
 	TIM_HandleTypeDef* htimLed;
+
+	floatUnion floatValTemp;
 
 	void manageConfiguration(uint8_t &timerID, uint16_t &prescalerValue,
 			uint16_t &ARRValue, uint8_t &clockDividerValue);
@@ -40,6 +43,7 @@ class TimerConfigurator {
 	void setConfigurationTim(TIM_HandleTypeDef* htim, uint16_t &prescalerValue,
 				uint16_t &ARRValue);
 
+	float calcFreq(uint32_t clock, uint16_t psc, uint16_t arr);
 public:
 	TimerConfigurator(TIM_HandleTypeDef* htim_IMU,
 					TIM_HandleTypeDef* htim_DataSend,
