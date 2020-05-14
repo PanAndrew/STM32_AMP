@@ -24,6 +24,7 @@
 #define ID_ULTRASOUND 0x0F
 #define ID_ELECTROMAG 0x10
 #define ID_TIM_MEASURE 0x11
+#define ID_PACKET_NUM 0xFE
 
 #define SIZE_SET_PWM 8
 #define SIZE_SET_TIM 6
@@ -47,7 +48,7 @@
 #define SIZE_RFID 5
 #define SIZE_GET_ULTRASOUND 2
 #define SIZE_GET_TIME_MEASURE 12
-
+#define SIZE_GET_PACKET_NUM 4
 
 #define IMU_NUM_OF_ELEM 250
 

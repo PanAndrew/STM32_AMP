@@ -11,12 +11,17 @@
 #include <map>
 #include <vector>
 #include "DataPtrVolumePair.h"
+#include <stdio.h>
+
+#define PACKET_NUM_OBJDATAVOLUME 4
 
 class DataManagement {
 
 	std::map<uint8_t, DataPtrVolumePair>* dataPtrMap;
 	std::vector<uint8_t> refDataArray;
 	uint16_t maxDataSize;
+
+	uint32_t packetNumber = 0;
 
 	uint16_t calcRefArrDataSize();
 
@@ -30,6 +35,7 @@ public:
 	uint16_t getCollectedData(uint8_t* globalBuffer);
 	uint16_t getMaxDataSize();
 
+	uint8_t getPacketNumber(uint8_t* dataBuffer);
 };
 
 #endif /* DATAMANAGEMENT_H_ */

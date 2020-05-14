@@ -76,6 +76,21 @@ uint16_t DataManagement::getMaxDataSize()
 	return maxDataSize;
 }
 
+
+uint8_t DataManagement::getPacketNumber(uint8_t *dataBuffer)
+{
+	uint8_t dataToReturn[PACKET_NUM_OBJDATAVOLUME];
+
+	dataToReturn[0] = packetNumber >> 24;
+	dataToReturn[1] = packetNumber >> 16;
+	dataToReturn[2] = packetNumber >> 8;
+	dataToReturn[3] = packetNumber & 0xFF;
+
+	std::copy_n(dataToReturn, PACKET_NUM_OBJDATAVOLUME, dataBuffer);
+
+	return PACKET_NUM_OBJDATAVOLUME;
+}
+
 uint16_t DataManagement::getCollectedData(uint8_t* globalBuffer)
 {
 	std::unique_ptr<uint8_t[]> dataBuffer = std::make_unique<uint8_t[]>(maxDataSize);
@@ -105,6 +120,6 @@ uint16_t DataManagement::getCollectedData(uint8_t* globalBuffer)
 
 	std::copy_n(dataBuffer.get(), dataSize, globalBuffer);
 
+	packetNumber++;
 	return dataSize;
 }
-
