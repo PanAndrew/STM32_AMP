@@ -7,6 +7,8 @@
 
 #include "TimerConfigurator.h"
 
+#define CALC_FREQUENCY(clk,psc,arr) (clk/((psc+1)*(arr+1)))
+
 TimerConfigurator::TimerConfigurator(TIM_HandleTypeDef* htim_IMU,
 									TIM_HandleTypeDef* htim_DataSend,
 									TIM_HandleTypeDef* htim_Led)
@@ -93,4 +95,31 @@ void TimerConfigurator::setConfigurationTim(TIM_HandleTypeDef* htim, uint16_t &p
 	__HAL_TIM_SET_AUTORELOAD(htim, ARRValue);
 	__HAL_TIM_SET_COUNTER(htim, 0);
 	HAL_TIM_Base_Start_IT(htim);
+}
+
+uint8_t TimerConfigurator::getDataInArray(uint8_t *dataBuffer)
+{
+	uint8_t dataToReturn[TIM_CONF_OBJECTDATAVOLUME];
+
+	uint16_t imuFreq = CALC_FREQUENCY(90000000, htimIMU->Instance->PSC, htimIMU->Instance->ARR);
+	uint16_t dataSendFreq = CALC_FREQUENCY(180000000, htimDataSend->Instance->PSC, htimDataSend->Instance->ARR);
+
+	dataToReturn[0] = htimIMU->Instance->PSC >> 8;
+	dataToReturn[1] = htimIMU->Instance->PSC & 0xFF;
+	dataToReturn[2] = htimIMU->Instance->ARR >> 8;
+	dataToReturn[3] = htimIMU->Instance->ARR & 0xFF;
+	dataToReturn[4] = htimIMU->Init.ClockDivision;
+	dataToReturn[5] = imuFreq >> 8;
+	dataToReturn[6] = imuFreq & 0xFF;
+	dataToReturn[7] = htimDataSend->Instance->PSC >> 8;
+	dataToReturn[8] = htimDataSend->Instance->PSC & 0xFF;
+	dataToReturn[9] = htimDataSend->Instance->ARR >> 8;
+	dataToReturn[10] = htimDataSend->Instance->ARR & 0xFF;
+	dataToReturn[11] = htimDataSend->Init.ClockDivision;
+	dataToReturn[12] = dataSendFreq >> 8;
+	dataToReturn[13] = dataSendFreq & 0xFF;
+
+	std::copy_n(dataToReturn, TIM_CONF_OBJECTDATAVOLUME, dataBuffer);
+
+	return TIM_CONF_OBJECTDATAVOLUME;
 }

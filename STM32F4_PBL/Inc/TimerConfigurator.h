@@ -9,6 +9,7 @@
 #define TIMERCONFIGURATOR_H_
 
 #include "stdint.h"
+#include <algorithm>
 #include "main.h"
 
 #define TIMER_ID 0
@@ -21,6 +22,8 @@
 #define HTIM_IMU_ID 6
 #define HTIM_DATA_SEND_ID 9
 #define HTIM_LED 7
+
+#define TIM_CONF_OBJECTDATAVOLUME 14
 
 class TimerConfigurator {
 
@@ -44,6 +47,7 @@ public:
 	virtual ~TimerConfigurator();
 
 	void configureTimer(uint8_t* dataBuffer);
+	uint8_t getDataInArray(uint8_t* dataBuffer);
 };
 
 #endif /* TIMERCONFIGURATOR_H_ */

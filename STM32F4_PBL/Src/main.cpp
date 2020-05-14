@@ -115,6 +115,7 @@ UltrasoundManager ultrasoundManager(&hdma_uart5_rx, &huart5);
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
 	{ID_PWM, DataPtrVolumePair{1, SIZE_GET_PWM, std::bind(&DrivingSystem::getDataInArray, &drivingSystem, std::placeholders::_1)}},
+	{ID_TIM, DataPtrVolumePair{1, SIZE_GET_TIM, std::bind(&TimerConfigurator::getDataInArray, &timerConfig, std::placeholders::_1)}},
 	{ID_ACC, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_ACC, std::bind(&IMUSensor::getAccData, &imuSensors, std::placeholders::_1)}},
 	{ID_GYRO, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_GYRO, std::bind(&IMUSensor::getGyroData, &imuSensors, std::placeholders::_1)}},
 	{ID_MAG, DataPtrVolumePair{IMU_NUM_OF_ELEM, SIZE_GET_MAG, std::bind(&IMUSensor::getMagData, &imuSensors, std::placeholders::_1)}},

@@ -33,7 +33,7 @@
 #define SIZE_SET_MAG 2
 
 #define SIZE_GET_PWM 8
-#define SIZE_GET_TIM 16
+#define SIZE_GET_TIM 14
 #define SIZE_GET_ACC 10
 #define SIZE_GET_GYRO 10
 #define SIZE_GET_MAG 10
