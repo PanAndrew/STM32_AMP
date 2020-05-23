@@ -47,6 +47,7 @@
 #include "lwip/pbuf.h"
 #include "lwip/udp.h"
 #include "lwip/tcp.h"
+#include "DataManagement.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -64,6 +65,8 @@
 void udp_receive_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port);
 
 struct udp_pcb *upcb;
+
+extern DataManagement dataManagement;
 
 
 /* Private functions ---------------------------------------------------------*/
@@ -119,7 +122,10 @@ void udp_client_send(uint8_t* dataToSend, uint16_t dataLength)
     pbuf_take(p, dataToSend, dataLength);
     
     /* send udp data */
-    udp_send(upcb, p); 
+    if(udp_send(upcb, p) != ERR_OK)
+    {
+    	dataManagement.incrementFrameErrorCnt();
+    }
     
     /* free pbuf */
     pbuf_free(p);

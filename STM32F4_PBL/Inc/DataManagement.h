@@ -13,7 +13,7 @@
 #include "DataPtrVolumePair.h"
 #include <stdio.h>
 
-#define PACKET_NUM_OBJDATAVOLUME 4
+#define PACKET_NUM_OBJDATAVOLUME 8
 
 class DataManagement {
 
@@ -22,6 +22,7 @@ class DataManagement {
 	uint16_t maxDataSize;
 
 	uint32_t packetNumber = 0;
+	uint32_t frameErrors = 0;
 
 	uint16_t calcRefArrDataSize();
 
@@ -34,8 +35,9 @@ public:
 	uint8_t getConfigInArray(uint8_t* dataBuffer);
 	uint16_t getCollectedData(uint8_t* globalBuffer);
 	uint16_t getMaxDataSize();
+	void incrementFrameErrorCnt();
 
-	uint8_t getPacketNumber(uint8_t* dataBuffer);
+	uint8_t getPacketsInfo(uint8_t* dataBuffer);
 };
 
 #endif /* DATAMANAGEMENT_H_ */

@@ -76,8 +76,12 @@ uint16_t DataManagement::getMaxDataSize()
 	return maxDataSize;
 }
 
+void DataManagement::incrementFrameErrorCnt()
+{
+	frameErrors++;
+}
 
-uint8_t DataManagement::getPacketNumber(uint8_t *dataBuffer)
+uint8_t DataManagement::getPacketsInfo(uint8_t *dataBuffer)
 {
 	uint8_t dataToReturn[PACKET_NUM_OBJDATAVOLUME];
 
@@ -85,6 +89,10 @@ uint8_t DataManagement::getPacketNumber(uint8_t *dataBuffer)
 	dataToReturn[1] = packetNumber >> 16;
 	dataToReturn[2] = packetNumber >> 8;
 	dataToReturn[3] = packetNumber & 0xFF;
+	dataToReturn[4] = frameErrors >> 24;
+	dataToReturn[5] = frameErrors >> 16;
+	dataToReturn[6] = frameErrors >> 8;
+	dataToReturn[7] = frameErrors & 0xFF;
 
 	std::copy_n(dataToReturn, PACKET_NUM_OBJDATAVOLUME, dataBuffer);
 

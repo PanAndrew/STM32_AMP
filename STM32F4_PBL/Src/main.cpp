@@ -128,7 +128,7 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 	{ID_RFID, DataPtrVolumePair{1, SIZE_RFID, std::bind(&RFIDManager::getDataInArray, &rfidManager, std::placeholders::_1)}},
 	{ID_ULTRASOUND, DataPtrVolumePair{1, SIZE_GET_ULTRASOUND, std::bind(&UltrasoundManager::getDataInArray, &ultrasoundManager, std::placeholders::_1)}},
 	{ID_TIM_MEASURE, DataPtrVolumePair{1, SIZE_GET_TIME_MEASURE, std::bind(&TimeMeasurementSystem::getDataInArray, &timMeasureSystem, std::placeholders::_1)}},
-	{ID_PACKET_NUM, DataPtrVolumePair{1, SIZE_GET_PACKET_NUM, std::bind(&DataManagement::getPacketNumber, &dataManagement, std::placeholders::_1)}},
+	{ID_PACKETS_INFO, DataPtrVolumePair{1, SIZE_GET_PACKETS_INFO, std::bind(&DataManagement::getPacketsInfo, &dataManagement, std::placeholders::_1)}},
 	{ID_TIME_SYNC, DataPtrVolumePair{1, SIZE_GET_TIME_SYNC, std::bind(&TimeSync::getDataInArray, &timeSync, std::placeholders::_1)}}
 };
 
