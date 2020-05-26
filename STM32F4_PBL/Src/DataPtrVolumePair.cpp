@@ -7,7 +7,7 @@
 
 #include "DataPtrVolumePair.h"
 
-DataPtrVolumePair::DataPtrVolumePair(uint8_t numbOfElem, uint8_t dataSize, std::function<uint8_t(uint8_t*)> ptrToFunction):
+DataPtrVolumePair::DataPtrVolumePair(uint8_t numbOfElem, uint8_t dataSize, std::function<uint16_t(uint8_t*)> ptrToFunction):
 			numberOfElements(numbOfElem), sizeOfElement(dataSize), functionPtr(ptrToFunction)
 {
 }
@@ -26,7 +26,7 @@ uint8_t DataPtrVolumePair::getSizeOfElement()
 	return sizeOfElement;
 }
 
-std::function<uint8_t(uint8_t*)> DataPtrVolumePair::getFunction()
+std::function<uint16_t(uint8_t*)> DataPtrVolumePair::getFunction()
 {
 	return functionPtr;
 }

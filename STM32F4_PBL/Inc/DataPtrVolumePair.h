@@ -16,15 +16,15 @@ class DataPtrVolumePair {
 
 	uint8_t numberOfElements;
 	uint8_t sizeOfElement;
-	std::function<uint8_t(uint8_t*)> functionPtr;
+	std::function<uint16_t(uint8_t*)> functionPtr;
 
 public:
-	DataPtrVolumePair(uint8_t numbOfElem, uint8_t dataSize, std::function<uint8_t(uint8_t*)> ptrToFunction);
+	DataPtrVolumePair(uint8_t numbOfElem, uint8_t dataSize, std::function<uint16_t(uint8_t*)> ptrToFunction);
 	virtual ~DataPtrVolumePair();
 
 	uint8_t getNumberOfElements();
 	uint8_t getSizeOfElement();
-	std::function<uint8_t(uint8_t*)> getFunction();
+	std::function<uint16_t(uint8_t*)> getFunction();
 };
 
 #endif /* DATAPTRVOLUMEPAIR_H_ */
