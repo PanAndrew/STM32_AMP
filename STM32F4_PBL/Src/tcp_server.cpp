@@ -194,7 +194,7 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 			}
 			break;
 
-		case ID_PWM << 1:
+		case ID_PWM:
 			iter++;
 			if (dataLengthRemain > SIZE_SET_PWM)
 			{
@@ -208,7 +208,7 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 			}
 			break;
 
-		case ID_TIM << 1:
+		case ID_TIM:
 			iter++;
 			if (dataLengthRemain > SIZE_SET_TIM)
 			{
@@ -236,7 +236,7 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 			}
 			break;
 
-		case ID_ACC << 1:
+		case ID_ACC:
 			iter++;
 			if (dataLengthRemain > SIZE_SET_ACC)
 			{
@@ -250,7 +250,7 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 			}
 			break;
 
-		case ID_GYRO << 1:
+		case ID_GYRO:
 			iter++;
 			if (dataLengthRemain > SIZE_SET_GYRO)
 			{
@@ -264,7 +264,7 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 			}
 			break;
 
-		case ID_MAG << 1:
+		case ID_MAG:
 			iter++;
 			if (dataLengthRemain > SIZE_SET_MAG)
 			{

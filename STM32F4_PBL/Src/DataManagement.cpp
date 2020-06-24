@@ -113,7 +113,6 @@ uint16_t DataManagement::getCollectedData(uint8_t* globalBuffer)
 
 		tempObj = &(dataPtrMap->at(indexID));
 		returnedSize = tempObj->getFunction()(&dataBuffer[++dataSize]);
-//		returnedSize = dataPtrMap->at(indexID).getFunction()(&dataBuffer[++dataSize]);
 
 		if(!returnedSize)
 		{

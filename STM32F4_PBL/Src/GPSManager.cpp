@@ -42,7 +42,7 @@ uint8_t* GPSManager::getDataBuffer()
 
 uint8_t GPSManager::getDataInArray(uint8_t* dataBuffer)
 {
-	if(gps.location.isUpdated())
+	if(gps.time.isUpdated())
 	{
 		uint8_t dataToReturn[GPS_OBJECTDATAVOLUME];
 		uint32_t tempValue;
@@ -118,9 +118,6 @@ uint8_t GPSManager::getDataInArray(uint8_t* dataBuffer)
 		dataToReturn[41] = floatUnionObj.floatArr[2];
 		dataToReturn[42] = floatUnionObj.floatArr[1];
 		dataToReturn[43] = floatUnionObj.floatArr[0];
-
-		//Course - cardinal
-		//dataToReturn[44] = *TinyGPSPlus::cardinal(gps.course.deg());
 
 		std::copy_n(dataToReturn, GPS_OBJECTDATAVOLUME, dataBuffer);
 
