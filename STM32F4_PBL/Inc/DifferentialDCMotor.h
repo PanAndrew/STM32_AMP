@@ -46,6 +46,7 @@ class DifferentialDCMotor {
 	void back_L(uint16_t pwmValue);
 	void stop_R();
 	void stop_L();
+	void setIdle();
 
 public:
 	DifferentialDCMotor();

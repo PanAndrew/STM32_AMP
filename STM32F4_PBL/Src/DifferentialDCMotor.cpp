@@ -7,7 +7,7 @@
 
 #include "DifferentialDCMotor.h"
 
-#define ADJUST(value) (value * 20)
+#define ADJUST(value) (value * 1)
 
 DifferentialDCMotor::DifferentialDCMotor() {
 	// TODO Auto-generated constructor stub
@@ -99,7 +99,7 @@ void DifferentialDCMotor::forward_R(uint16_t pwmValue)
 	}
 
 	setPWMOnTimer(timChannel[RIGHT_MOTOR], ADJUST(pwmValue));
-	this->pwmValue[LEFT_MOTOR] = pwmValue;
+	this->pwmValue[RIGHT_MOTOR] = pwmValue;
 	right(BRIDGE_A1_GPIO_Port, BRIDGE_A1_Pin, BRIDGE_A2_GPIO_Port, BRIDGE_A2_Pin);
 	motorPresentStatus[RIGHT_MOTOR] = forwardRun;
 }
@@ -184,6 +184,16 @@ void DifferentialDCMotor::stopPlatform()
 {
 	stop_L();
 	stop_R();
+	setIdle();
+}
+
+void DifferentialDCMotor::setIdle()
+{
+	motorDesiredStatus[LEFT_MOTOR] = idle_stat;
+	motorDesiredStatus[RIGHT_MOTOR] = idle_stat;
+
+	pwmDesiredValue[LEFT_MOTOR] = idlePWMValue;
+	pwmDesiredValue[RIGHT_MOTOR] = idlePWMValue;
 }
 
 void DifferentialDCMotor::configureDesiredPWM(uint8_t *leftMotorDirection, uint8_t *rightMotorDirection, uint16_t *leftDesiredPWM, uint16_t *rightDesiredPWM)
