@@ -184,8 +184,8 @@ void manageRecaivedData(struct tcp_server_struct *es, struct pbuf *p)
 			iter++;
 			if (dataLengthRemain > 0)
 			{
-				dataManagement.confRefArray(&data[iter], dataLengthRemain - 1);
-				iter += (dataLengthRemain - 1);
+				dataManagement.confRefArray(&data[iter + 1], data[iter]);
+				iter += data[iter];
 			}
 			else
 			{
