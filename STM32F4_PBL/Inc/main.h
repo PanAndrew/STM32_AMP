@@ -68,6 +68,10 @@ void Error_Handler(void);
 #define BRIDGE_A1_GPIO_Port GPIOF
 #define BRIDGE_B2_Pin GPIO_PIN_0
 #define BRIDGE_B2_GPIO_Port GPIOC
+#define UART_MLIDAR_S_TX_Pin GPIO_PIN_10
+#define UART_MLIDAR_S_TX_GPIO_Port GPIOB
+#define UART_MLIDAR_S_RX_Pin GPIO_PIN_11
+#define UART_MLIDAR_S_RX_GPIO_Port GPIOB
 #define RED_LED_Pin GPIO_PIN_14
 #define RED_LED_GPIO_Port GPIOB
 #define UART_RFID_TX_Pin GPIO_PIN_10

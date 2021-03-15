@@ -130,7 +130,6 @@ uint8_t Encoder::getDataInArray(uint8_t* dataBuffer)
 	dataToReturn[7] = distance.arrVal[1];
 	dataToReturn[8] = distance.arrVal[0];
 
-
 	std::copy_n(dataToReturn, ENCODER_OBJECTDATAVOLUME, dataBuffer);
 
 	return ENCODER_OBJECTDATAVOLUME;

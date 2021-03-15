@@ -58,16 +58,16 @@ class IMUSensor {
 
 	void pullAccData(I2C_HandleTypeDef *hi2c, uint8_t accDeviceAddr, uint8_t registerAddr, uint8_t size);
 	void pullGyroData(I2C_HandleTypeDef *hi2c, uint8_t gyroDeviceAddr, uint8_t gyroDataAddr, uint8_t size);
-	void pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint8_t size);
+//	void pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint8_t size);
 	void pullMagData(I2C_HandleTypeDef *hi2c, uint8_t magDeviceAddr, uint8_t registerAddr, uint8_t size);
 
 	void addToBuffer(DataBuffer<IMUData> &buffer, uint32_t timeStamp, uint8_t size);
 
-	void writeSPI(SPI_HandleTypeDef *hspi, uint8_t *sensorRegAddr, uint8_t *regValue);
+//	void writeSPI(SPI_HandleTypeDef *hspi, uint8_t *sensorRegAddr, uint8_t *regValue);
 	void writeI2C(I2C_HandleTypeDef *hi2c, uint8_t sensorAddr , uint8_t *sensorRegAddr, uint8_t *regValue);
 
 	void configureAcc(I2C_HandleTypeDef *hi2c, uint8_t accRegAddr, uint8_t regValue);
-	void configureGyro(SPI_HandleTypeDef *hspi, uint8_t gyroRegAddr, uint8_t regValue);
+//	void configureGyro(SPI_HandleTypeDef *hspi, uint8_t gyroRegAddr, uint8_t regValue);
 	void configureGyro(I2C_HandleTypeDef *hi2c, uint8_t gyroRegAddr, uint8_t regValue);
 	void configureMag(I2C_HandleTypeDef *hi2c, uint8_t accRegAddr, uint8_t regValue);
 
@@ -78,10 +78,10 @@ public:
 	virtual ~IMUSensor();
 
 	void initializeI2C_Sensors(I2C_HandleTypeDef *hi2c);
-	void initializeSPI_Sensors(SPI_HandleTypeDef *hspi);
+//	void initializeSPI_Sensors(SPI_HandleTypeDef *hspi);
 
 	void pullDataFromSensorsI2C(I2C_HandleTypeDef *hi2c);
-	void pullDataFromSensorsSPI(SPI_HandleTypeDef *hspi);
+//	void pullDataFromSensorsSPI(SPI_HandleTypeDef *hspi);
 
 	uint16_t getAccData(uint8_t *dataBuffer);
 	uint16_t getGyroData(uint8_t *dataBuffer);

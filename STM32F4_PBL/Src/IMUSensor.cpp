@@ -39,16 +39,16 @@ void IMUSensor::initializeI2C_Sensors(I2C_HandleTypeDef *hi2c)
 #endif
 }
 
-void IMUSensor::initializeSPI_Sensors(SPI_HandleTypeDef *hspi)
-{
-#ifdef XNucleoV3
-
-#elif defined(XNucleoV1)
-
-#else
-	configureGyro(hspi, GYRO_CNT_REG_1, GYRO_TURN_ON);
-#endif
-}
+//void IMUSensor::initializeSPI_Sensors(SPI_HandleTypeDef *hspi)
+//{
+//#ifdef XNucleoV3
+//
+//#elif defined(XNucleoV1)
+//
+//#else
+//	configureGyro(hspi, GYRO_CNT_REG_1, GYRO_TURN_ON);
+//#endif
+//}
 
 void IMUSensor::addToBuffer(DataBuffer<IMUData> &buffer, uint32_t timeStamp, uint8_t size)
 {
@@ -86,22 +86,22 @@ void IMUSensor::pullGyroData(I2C_HandleTypeDef *hi2c, uint8_t gyroDeviceAddr, ui
 	}
 }
 
-void IMUSensor::pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint8_t size)
-{
-	  HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
-	  HAL_SPI_Transmit(hspi, &gyroDataAddr, 1, 1);
-	  HAL_SPI_Receive(hspi, rawData, size, 1);
-	  HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
-
-	  dataTimeStamp = HAL_GetTick();
-
-	  for(uint8_t i = 0; i < 6; i+=2)
-	  {
-		  std::swap(rawData[i], rawData[i + 1]);
-	  }
-
-	  addToBuffer(gyroBuffer, dataTimeStamp, size);
-}
+//void IMUSensor::pullGyroData(SPI_HandleTypeDef *hspi, uint8_t gyroDataAddr, uint8_t size)
+//{
+//	  HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
+//	  HAL_SPI_Transmit(hspi, &gyroDataAddr, 1, 1);
+//	  HAL_SPI_Receive(hspi, rawData, size, 1);
+//	  HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
+//
+//	  dataTimeStamp = HAL_GetTick();
+//
+//	  for(uint8_t i = 0; i < 6; i+=2)
+//	  {
+//		  std::swap(rawData[i], rawData[i + 1]);
+//	  }
+//
+//	  addToBuffer(gyroBuffer, dataTimeStamp, size);
+//}
 
 void IMUSensor::pullMagData(I2C_HandleTypeDef *hi2c, uint8_t magDeviceAddr, uint8_t registerAddr, uint8_t size)
 {
@@ -147,27 +147,27 @@ void IMUSensor::pullDataFromSensorsI2C(I2C_HandleTypeDef *hi2c)
 	}
 }
 
-void IMUSensor::pullDataFromSensorsSPI(SPI_HandleTypeDef *hspi)
-{
-	if(!readingInProgress)
-	{
-	#ifdef XNucleoV3
+//void IMUSensor::pullDataFromSensorsSPI(SPI_HandleTypeDef *hspi)
+//{
+//	if(!readingInProgress)
+//	{
+//	#ifdef XNucleoV3
+//
+//	#elif defined(XNucleoV1)
+//
+//	#else
+//		pullGyroData(hspi, GYRO_DATA | GYRO_MULTICONT_READ, GYRO_DATA_SIZE);
+//	#endif
+//	}
+//}
 
-	#elif defined(XNucleoV1)
-
-	#else
-		pullGyroData(hspi, GYRO_DATA | GYRO_MULTICONT_READ, GYRO_DATA_SIZE);
-	#endif
-	}
-}
-
-void IMUSensor::writeSPI(SPI_HandleTypeDef *hspi, uint8_t *sensorRegAddr, uint8_t *regValue)
-{
-	uint8_t commandToSend[2] = {*sensorRegAddr, *regValue};
-	HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(hspi, commandToSend, 2, 1);
-	HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
-}
+//void IMUSensor::writeSPI(SPI_HandleTypeDef *hspi, uint8_t *sensorRegAddr, uint8_t *regValue)
+//{
+//	uint8_t commandToSend[2] = {*sensorRegAddr, *regValue};
+//	HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_RESET);
+//	HAL_SPI_Transmit(hspi, commandToSend, 2, 1);
+//	HAL_GPIO_WritePin(SPI1_SS_GPIO_Port, SPI1_SS_Pin, GPIO_PIN_SET);
+//}
 
 void IMUSensor::writeI2C(I2C_HandleTypeDef *hi2c, uint8_t sensorAddr , uint8_t *sensorRegAddr, uint8_t *regValue)
 {
@@ -186,10 +186,10 @@ void IMUSensor::configureAcc(I2C_HandleTypeDef *hi2c, uint8_t accRegAddr, uint8_
 #endif
 }
 
-void IMUSensor::configureGyro(SPI_HandleTypeDef *hspi, uint8_t gyroRegAddr, uint8_t regValue)
-{
-	writeSPI(hspi, &gyroRegAddr, &regValue);
-}
+//void IMUSensor::configureGyro(SPI_HandleTypeDef *hspi, uint8_t gyroRegAddr, uint8_t regValue)
+//{
+//	writeSPI(hspi, &gyroRegAddr, &regValue);
+//}
 
 void IMUSensor::configureGyro(I2C_HandleTypeDef *hi2c, uint8_t gyroRegAddr, uint8_t regValue)
 {
