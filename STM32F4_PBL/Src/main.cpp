@@ -42,6 +42,7 @@
 #include "Electromagnet.h"
 #include "TimeMeasurementSystem.h"
 #include "UltrasoundManager.h"
+#include "EchoUltrasound.h"
 
 extern "C" void UART_GPS_RX_PROCESSING(void);
 extern "C" void UART_LIDAR_RX_PROCESSING(void);
@@ -77,6 +78,7 @@ SPI_HandleTypeDef hspi2;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim8;
@@ -111,6 +113,7 @@ RFIDManager rfidManager(&hdma_uart4_rx);
 Electromagnet electromagnet;
 TimeMeasurementSystem timMeasureSystem(&htim14);
 UltrasoundManager ultrasoundManager(&hdma_uart5_rx, &huart5);
+EchoUltrasound echoUltrasound(&htim5, TIM_CHANNEL_1, &htim14);
 
 std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 {
@@ -127,6 +130,7 @@ std::map<uint8_t, DataPtrVolumePair> dataPtrMap =
 	{ID_CAN_REFLE, DataPtrVolumePair{1, SIZE_CAN_REFLE, std::bind(&CANLidar::getReflectionDataInArray, &canLidar, std::placeholders::_1)}},
 	{ID_RFID, DataPtrVolumePair{1, SIZE_RFID, std::bind(&RFIDManager::getDataInArray, &rfidManager, std::placeholders::_1)}},
 	{ID_ULTRASOUND, DataPtrVolumePair{1, SIZE_GET_ULTRASOUND, std::bind(&UltrasoundManager::getDataInArray, &ultrasoundManager, std::placeholders::_1)}},
+	{ID_ECHO_ULTRASOUND, DataPtrVolumePair{1, SIZE_GET_ECHO_ULTRASOUND, std::bind(&EchoUltrasound::getDataInArray, &echoUltrasound, std::placeholders::_1)}},
 	{ID_TIM_MEASURE, DataPtrVolumePair{1, SIZE_GET_TIME_MEASURE, std::bind(&TimeMeasurementSystem::getDataInArray, &timMeasureSystem, std::placeholders::_1)}},
 	{ID_PACKETS_INFO, DataPtrVolumePair{1, SIZE_GET_PACKETS_INFO, std::bind(&DataManagement::getPacketsInfo, &dataManagement, std::placeholders::_1)}},
 	{ID_TIME_SYNC, DataPtrVolumePair{1, SIZE_GET_TIME_SYNC, std::bind(&TimeSync::getDataInArray, &timeSync, std::placeholders::_1)}}
@@ -151,6 +155,7 @@ static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_CAN1_Init(void);
+static void MX_TIM5_Init(void);
 static void MX_TIM12_Init(void);
 static void MX_TIM13_Init(void);
 static void MX_TIM14_Init(void);
@@ -238,6 +243,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		timMeasureSystem.takeTS(5);
 
 		ultrasoundManager.fetchDistanceData();
+		echoUltrasound.generateTriggerImpulse();
 
 		timMeasureSystem.takeTS(5);
 	}
@@ -334,6 +340,21 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	canLidar.processRXData(CAN_RX_FIFO1);
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == ULTR_SOUND_ECHO_Pin)
+	{
+		if(HAL_GPIO_ReadPin(ULTR_SOUND_ECHO_GPIO_Port, ULTR_SOUND_ECHO_Pin))
+		{
+			echoUltrasound.takeTimeStamp();
+		}
+		else
+		{
+			echoUltrasound.calculateDistance();
+		}
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -379,6 +400,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
   MX_CAN1_Init();
+  MX_TIM5_Init();
   MX_TIM12_Init();
   MX_TIM13_Init();
   MX_TIM14_Init();
@@ -736,6 +758,69 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 89;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = 9;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_OnePulse_Init(&htim5, TIM_OPMODE_SINGLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+
+  /* USER CODE END TIM5_Init 2 */
+  HAL_TIM_MspPostInit(&htim5);
+
+}
+
+/**
   * @brief TIM6 Initialization Function
   * @param None
   * @retval None
@@ -981,7 +1066,7 @@ static void MX_TIM12_Init(void)
   htim12.Instance = TIM12;
   htim12.Init.Prescaler = 8999;
   htim12.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim12.Init.Period = 199;
+  htim12.Init.Period = 999;
   htim12.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim12.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim12) != HAL_OK)
@@ -1280,6 +1365,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIO_ELECTROMAGNET_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ULTR_SOUND_ECHO_Pin */
+  GPIO_InitStruct.Pin = ULTR_SOUND_ECHO_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(ULTR_SOUND_ECHO_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SPI1_SS_Pin */
   GPIO_InitStruct.Pin = SPI1_SS_Pin;
