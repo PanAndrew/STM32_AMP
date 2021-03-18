@@ -18,7 +18,7 @@ EchoUltrasound::~EchoUltrasound() {
 
 void EchoUltrasound::generateTriggerImpulse()
 {
-	HAL_TIM_OnePulse_Start(triggerTimerHandle, trigTimChannel);
+	__HAL_TIM_SET_COMPARE(triggerTimerHandle, trigTimChannel, triggerTimerHandle->Instance->ARR);
 	mstate = Running;
 	desiredState = Leading;
 }
