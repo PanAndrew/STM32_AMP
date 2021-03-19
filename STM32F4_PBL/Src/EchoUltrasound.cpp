@@ -29,28 +29,9 @@ void EchoUltrasound::takeTimeStamp()
 	{
 		if(desiredState == Leading)
 		{
-			lastTimeStamp = counterTimerHandle->Instance->CNT;
+			lastTimeStamp = HAL_TIM_ReadCapturedValue(counterTimerHandle, TIM_CHANNEL_1);//counterTimerHandle->Instance->CNT;
 			desiredState = Falling;
 		}
-//		else
-//		{
-//			if(currentState == Falling)
-//			{
-//				uint16_t diff = timerHandle->Instance->CNT - lastTimeStamp;
-//
-//				if(diff >= 0)
-//				{
-//					lastTimeStamp += diff;
-//				}
-//				else
-//				{
-//					lastTimeStamp += diff + timerHandle->Instance->ARR + 1;
-//				}
-//
-//				mstate = Finished;
-//
-//			}
-//		}
 	}
 
 }
@@ -61,14 +42,16 @@ void EchoUltrasound::calculateDistance()
 	{
 		if(desiredState == Falling)
 		{
-			uint16_t diff = counterTimerHandle->Instance->CNT - lastTimeStamp;
+			uint16_t diff = HAL_TIM_ReadCapturedValue(counterTimerHandle, TIM_CHANNEL_1) - lastTimeStamp;
 
 			if(diff >= 0)
 			{
+//				distance.floatValue = diff / 58.0;
 				distance.floatValue = (diff * SPEED_OF_SOUND) / 2.0;
 			}
 			else
 			{
+//				distance.floatValue = (diff + counterTimerHandle->Instance->ARR + 1) / 58.0;
 				distance.floatValue = ((diff + counterTimerHandle->Instance->ARR + 1) * SPEED_OF_SOUND) / 2.0;
 			}
 

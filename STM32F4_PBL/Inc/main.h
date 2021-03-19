@@ -90,9 +90,6 @@ void Error_Handler(void);
 #define UART_MLIDAR_TX_GPIO_Port GPIOG
 #define BLUE_LED_Pin GPIO_PIN_7
 #define BLUE_LED_GPIO_Port GPIOB
-#define ULTR_SOUND_ECHO_Pin GPIO_PIN_0
-#define ULTR_SOUND_ECHO_GPIO_Port GPIOE
-#define ULTR_SOUND_ECHO_EXTI_IRQn EXTI0_IRQn
 #define SPI1_SS_Pin GPIO_PIN_1
 #define SPI1_SS_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
